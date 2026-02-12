@@ -27,7 +27,7 @@ class StockUpdateTest extends TestCase
             'quantity' => 50,
         ]);
 
-        StockMovement::create([
+        StockMovement::factory()->create([
             'product_id' => $product->id,
             'warehouse_id' => $warehouse->id,
             'type' => 'in',
@@ -49,7 +49,7 @@ class StockUpdateTest extends TestCase
             'quantity' => 50,
         ]);
 
-        StockMovement::create([
+        StockMovement::factory()->create([
             'product_id' => $product->id,
             'warehouse_id' => $warehouse->id,
             'type' => 'out',
@@ -65,7 +65,7 @@ class StockUpdateTest extends TestCase
         $product = Product::factory()->create();
         $warehouse = Warehouse::factory()->create();
 
-        StockMovement::create([
+        StockMovement::factory()->create([
             'product_id' => $product->id,
             'warehouse_id' => $warehouse->id,
             'type' => 'in',

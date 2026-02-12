@@ -19,7 +19,7 @@ return new class extends Migration {
             $table->enum('type', ['in', 'out', 'transfer', 'audit']);
             $table->integer('quantity');
             $table->decimal('unit_cost', 10, 2)->nullable()->comment('Cost per unit at the time of movement (required for IN)');
-            $table->foreignId('user_id')->nullable()->constrained();
+            $table->foreignId('user_id')->constrained();
             $table->text('description')->nullable();
             $table->timestamps();
         });

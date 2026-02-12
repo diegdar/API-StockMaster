@@ -11,21 +11,6 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        DB::statement("DROP VIEW IF EXISTS vw_inventory_valuation");
-        DB::statement("
-            CREATE VIEW vw_inventory_valuation AS
-            SELECT 
-                p.id as product_id,
-                p.name as product_name,
-                p.sku,
-                SUM(i.quantity) as total_quantity,
-                p.cost as unit_cost,
-                SUM(i.quantity * p.cost) as total_value
-            FROM products p
-            JOIN inventories i ON p.id = i.product_id
-            GROUP BY p.id, p.name, p.sku, p.cost
-        ");
-
         DB::statement("DROP VIEW IF EXISTS vw_out_of_stock");
         DB::statement("
             CREATE VIEW vw_out_of_stock AS
@@ -47,7 +32,6 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        DB::statement("DROP VIEW IF EXISTS vw_inventory_valuation");
         DB::statement("DROP VIEW IF EXISTS vw_out_of_stock");
     }
 };

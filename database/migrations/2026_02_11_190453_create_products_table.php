@@ -19,7 +19,8 @@ return new class extends Migration {
             $table->decimal('price', 10, 2);
             $table->decimal('cost', 10, 2);
             $table->integer('min_stock_level')->default(0);
-            $table->foreignId('category_id')->constrained()->onDelete('restrict');
+            $table->unsignedSmallInteger('category_id');
+            $table->foreign('category_id')->references('id')->on('categories')->onDelete('restrict');
             $table->foreignId('supplier_id')->constrained()->onDelete('restrict');
             $table->timestamps();
         });
