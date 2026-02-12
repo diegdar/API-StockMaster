@@ -28,6 +28,7 @@ class FifoValuation implements InventoryValuationStrategy
             ->where('type', 'in')
             ->whereNotNull('unit_cost')
             ->orderBy('created_at', 'asc')
+            ->orderBy('id', 'asc')
             ->get();
     }
 

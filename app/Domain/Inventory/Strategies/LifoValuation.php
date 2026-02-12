@@ -29,6 +29,7 @@ class LifoValuation implements InventoryValuationStrategy
             ->where('type', 'in')
             ->whereNotNull('unit_cost')
             ->orderBy('created_at', 'desc')
+            ->orderBy('id', 'desc')
             ->get();
     }
 
