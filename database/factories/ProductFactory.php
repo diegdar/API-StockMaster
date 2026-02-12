@@ -23,9 +23,10 @@ class ProductFactory extends Factory
             'sku' => $this->faker->unique()->bothify('PROD-####-??'),
             'name' => ucfirst($this->faker->words(3, true)),
             'description' => $this->faker->paragraph(),
-            'price' => $this->faker->randomFloat(2, 10, 1000),
-            'cost' => $this->faker->randomFloat(2, 5, 500),
+            'unit_price' => $this->faker->randomFloat(2, 10, 1000),
+            'unit_cost' => $this->faker->randomFloat(2, 5, 500),
             'min_stock_level' => $this->faker->numberBetween(10, 50),
+            'valuation_strategy' => $this->faker->randomElement(['fifo', 'lifo', 'avg']),
             'category_id' => Category::factory(),
             'supplier_id' => Supplier::factory(),
         ];

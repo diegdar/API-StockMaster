@@ -17,6 +17,7 @@ class Product extends Model
         'supplier_id',
         'sku',
         'unit_price',
+        'unit_cost',
         'valuation_strategy',
     ];
 
