@@ -7,6 +7,7 @@ use App\Domain\Inventory\Services\StockService;
 use App\Models\Product;
 use App\Models\Warehouse;
 use App\Models\StockMovement;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -15,10 +16,13 @@ class StockServiceTest extends TestCase
     use RefreshDatabase;
 
     private StockService $service;
+    private User $user;
 
     protected function setUp(): void
     {
         parent::setUp();
+        $this->user = User::factory()->create();
+        $this->actingAs($this->user);
         $this->service = app(StockService::class);
     }
 
