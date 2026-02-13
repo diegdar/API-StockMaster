@@ -174,6 +174,32 @@ Calcula el valor del inventario usando diferentes estrategias:
 - **LIFO** (Last In, First Out - Última Entrada, Primera Salida)
 - **Costo Promedio**
 
+## 📤 Postman Collection
+
+Se incluye una colección de Postman lista para importar con todos los endpoints documentados.
+
+### Importar Colección
+
+1. Abre Postman
+2. Haz clic en **Import**
+3. Selecciona el archivo [`postman-collection.json`](postman-collection.json)
+
+### Variables de Entorno
+
+La colección incluye las siguientes variables:
+
+| Variable | Valor | Descripción |
+|----------|-------|-------------|
+| `baseUrl` | `http://localhost:8000/api` | URL base de la API |
+| `accessToken` | (se auto-configura) | Token de acceso OAuth2 |
+| `productId` | (se auto-configura) | ID del producto para pruebas |
+
+### Flujo de Prueba Recomendado
+
+1. **Registrar usuario**: `POST /auth/register` → Configura automáticamente `{{accessToken}}`
+2. **Listar productos**: `GET /products` → Obtiene el primer ID de producto
+3. **Probar endpoints**: Usa el ID obtenido para probar Show, Update y Delete
+
 ## 📖 Documentación
 
 La documentación de la API se genera automáticamente usando Scramble. Accede en:

@@ -1,0 +1,441 @@
+{
+    "info": {
+        "_postman_id": "stockmaster-api-collection",
+        "name": "StockMaster API",
+        "description": "API RESTful para la gestion avanzada de inventarios multialmacen",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "variable": [
+        {
+            "key": "baseUrl",
+            "value": "http://localhost:8000/api",
+            "type": "string"
+        },
+        {
+            "key": "accessToken",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "productId",
+            "value": "",
+            "type": "string"
+        }
+    ],
+    "auth": {
+        "type": "bearer",
+        "bearer": [
+            {
+                "key": "token",
+                "value": "{{accessToken}}",
+                "type": "string"
+            }
+        ]
+    },
+    "item": [
+        {
+            "name": "Authentication",
+            "item": [
+                {
+                    "name": "Register User",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 201) {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    if (jsonData.data && jsonData.data.access_token) {",
+                                    "        pm.collectionVariables.set('accessToken', jsonData.data.access_token);",
+                                    "    }",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"Test User\",\n    \"email\": \"test@example.com\",\n    \"password\": \"password123\",\n    \"password_confirmation\": \"password123\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/register",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "register"
+                            ]
+                        },
+                        "description": "Register a new user. Returns access token for authentication."
+                    },
+                    "response": [
+                        {
+                            "name": "Registration Success",
+                            "status": "Created",
+                            "code": 201,
+                            "_postman_previewlanguage": "json",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\"message\": \"User registered successfully\", \"data\": {\"user\": {\"id\": 1, \"name\": \"Test User\", \"email\": \"test@example.com\"}, \"access_token\": \"...\", \"token_type\": \"Bearer\"}}"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "User Profile",
+            "item": [
+                {
+                    "name": "Get Current User",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{accessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/user",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "user"
+                            ]
+                        },
+                        "description": "Get the currently authenticated user profile"
+                    },
+                    "response": [
+                        {
+                            "name": "User Profile Success",
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\"id\": 1, \"name\": \"Test User\", \"email\": \"test@example.com\", \"roles\": [{\"id\": 1, \"name\": \"Viewer\", \"guard_name\": \"api\"}]}"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Products",
+            "item": [
+                {
+                    "name": "List Products",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 200) {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    if (jsonData.data && jsonData.data.length > 0) {",
+                                    "        pm.collectionVariables.set('productId', jsonData.data[0].id);",
+                                    "    }",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{accessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/products",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "products"
+                            ]
+                        },
+                        "description": "Retrieve a paginated list of products. Requires authentication."
+                    },
+                    "response": [
+                        {
+                            "name": "Products List Success",
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\"data\": [{\"id\": 1, \"name\": \"Sample Product\", \"sku\": \"SKU-001\", \"description\": \"A sample product\", \"unit_price\": 99.99, \"unit_cost\": 50.00, \"category_id\": 1, \"supplier_id\": 1, \"valuation_strategy\": \"fifo\", \"min_stock_level\": 10}], \"links\": {\"first\": \"...?page=1\", \"last\": \"...?page=5\", \"prev\": null, \"next\": \"...?page=2\"}, \"meta\": {\"current_page\": 1, \"last_page\": 5, \"per_page\": 15, \"total\": 75}}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Create Product",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{accessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"New Product\",\n    \"sku\": \"SKU-NEW-001\",\n    \"description\": \"A new product\",\n    \"unit_price\": 149.99,\n    \"unit_cost\": 75.00,\n    \"category_id\": 1,\n    \"supplier_id\": 1,\n    \"valuation_strategy\": \"fifo\",\n    \"min_stock_level\": 10\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/products",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "products"
+                            ]
+                        },
+                        "description": "Create a new product. Requires Admin role."
+                    },
+                    "response": [
+                        {
+                            "name": "Product Created",
+                            "status": "Created",
+                            "code": 201,
+                            "_postman_previewlanguage": "json",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\"id\": 1, \"name\": \"New Product\", \"sku\": \"SKU-NEW-001\", \"unit_price\": 149.99, \"unit_cost\": 75.00, \"category_id\": 1, \"supplier_id\": 1, \"valuation_strategy\": \"fifo\", \"min_stock_level\": 10}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Show Product",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{accessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/products/{{productId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "products",
+                                "{{productId}}"
+                            ]
+                        },
+                        "description": "Retrieve a specific product by ID. Requires authentication."
+                    },
+                    "response": [
+                        {
+                            "name": "Product Show Success",
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\"id\": 1, \"name\": \"New Product\", \"sku\": \"SKU-NEW-001\", \"unit_price\": 149.99, \"unit_cost\": 75.00, \"category_id\": 1, \"supplier_id\": 1, \"valuation_strategy\": \"fifo\", \"min_stock_level\": 10}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Update Product",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{accessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"Updated Product\",\n    \"sku\": \"SKU-NEW-001\",\n    \"description\": \"Updated description\",\n    \"unit_price\": 179.99,\n    \"unit_cost\": 85.00,\n    \"category_id\": 1,\n    \"supplier_id\": 1,\n    \"valuation_strategy\": \"fifo\",\n    \"min_stock_level\": 15\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/products/{{productId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "products",
+                                "{{productId}}"
+                            ]
+                        },
+                        "description": "Update a product. Requires Admin role."
+                    },
+                    "response": [
+                        {
+                            "name": "Product Updated",
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\"id\": 1, \"name\": \"Updated Product\", \"sku\": \"SKU-NEW-001\", \"unit_price\": 179.99, \"unit_cost\": 85.00, \"category_id\": 1, \"supplier_id\": 1, \"valuation_strategy\": \"fifo\", \"min_stock_level\": 15}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Delete Product",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{accessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/products/{{productId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "products",
+                                "{{productId}}"
+                            ]
+                        },
+                        "description": "Delete a product. Requires Admin role. Returns 204 No Content."
+                    },
+                    "response": [
+                        {
+                            "name": "Product Deleted",
+                            "status": "No Content",
+                            "code": 204,
+                            "_postman_previewlanguage": "json",
+                            "header": [],
+                            "body": ""
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
