@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
-// use Tests\TestCase;
+use Tests\TestCase;
 
 class ExampleTest extends TestCase
 {

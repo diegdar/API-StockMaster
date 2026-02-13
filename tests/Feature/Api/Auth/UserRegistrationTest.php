@@ -59,7 +59,7 @@ class UserRegistrationTest extends TestCase
                 'payload' => [
                     'name' => 'Test User',
                     'email' => 'invalid-email',
-                    'password' => 'password123',
+                    'password' => 'Password123!',
                 ],
                 'expectedErrors' => ['email'],
             ],
@@ -67,7 +67,7 @@ class UserRegistrationTest extends TestCase
                 'payload' => [
                     'name' => 'Test User',
                     'email' => 'test@example.com',
-                    'password' => '123',
+                    'password' => 'Short1!',
                 ],
                 'expectedErrors' => ['password'],
             ],
@@ -97,7 +97,7 @@ class UserRegistrationTest extends TestCase
         $payload = [
             'name' => 'Test User',
             'email' => 'existing@example.com',
-            'password' => 'password123',
+            'password' => 'Password123!',
         ];
 
         $response = $this->postJson(route('auth.register'), $payload);
@@ -114,8 +114,8 @@ class UserRegistrationTest extends TestCase
         $payload = [
             'name' => 'Test User',
             'email' => 'test@example.com',
-            'password' => 'password123',
-            'password_confirmation' => 'password123',
+            'password' => 'Password123!',
+            'password_confirmation' => 'Password123!',
         ];
 
         $response = $this->postJson(route('auth.register'), $payload);
