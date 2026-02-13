@@ -7,15 +7,24 @@ use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\PermissionRegistrar;
+use Database\Seeders\Traits\DisablesForeignKeyChecking;
+
 class RoleAndPermissionSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
+    use DisablesForeignKeyChecking;
+
     public function run(): void
     {
         // Reset cached roles and permissions
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
+
+        $this->disableForeignKeyChecking();
+
+        // Clean existing permissions and roles
+        Permission::truncate();
+        Role::truncate();
+
+        $this->enableForeignKeyChecking();
 
         // Create Permissions
         Permission::create(['name' => 'manage products']);

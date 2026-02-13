@@ -21,6 +21,11 @@ class RegisterRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
+     * Password requirements:
+     * - Minimum 8 characters
+     * - At least one uppercase letter
+     * - At least one special character (!@#$%^&*(),.?":{}|<>)
+     *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
     public function rules(): array

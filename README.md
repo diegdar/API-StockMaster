@@ -42,6 +42,7 @@ El diseño se basa en la separación de tablas de catálogo y transacciones:
 - **RBAC** (Control de Acceso Basado en Roles) con middleware de protección
 - **Rate Limiting** habilitado en todas las rutas protegidas
 - **Rutas Nombradas** - Sin URLs hardcodeadas
+- **Validación de Password** - Regla StrongPassword: mínimo 8 caracteres, mayúscula y carácter especial
 
 ## 📡 Endpoints de la API
 
@@ -122,10 +123,79 @@ php artisan migrate
 php artisan passport:install --force
 ```
 
-7. **Poblar la base de datos**
-```bash
-php artisan db:seed
+### Requisitos de Password para Registro
+
+El endpoint de registro requiere un password que cumpla con:
+- Mínimo **8 caracteres**
+- Al menos una **letra mayúscula**
+- Al menos un **carácter especial** (`!@#$%^&*(),.?":{}|<>`)
+
+**Ejemplo de password válido:** `Password123!`
+
+| Campo | Valor |
+|-------|-------|
+| Password | `Password123!` |
+
+> **Nota:** El [`UserFactory`](database/factories/UserFactory.php) y los tests usan passwords que cumplen estos requisitos.
+
+## 📦 Seeders de Base de Datos
+
+### Estructura Modular
+
+El proyecto sigue un patrón de seeders modulares donde cada entidad tiene su propio Seeder:
+
+| Seeder | Entidad | Registros |
+|--------|---------|-----------|
+| [`RoleAndPermissionSeeder`](database/seeders/RoleAndPermissionSeeder.php) | Roles y Permisos | 3 roles, 4 permisos |
+| [`UserSeeder`](database/seeders/UserSeeder.php) | Usuarios | 1 admin + 4 usuarios |
+| [`CategorySeeder`](database/seeders/CategorySeeder.php) | Categorías | 5 categorías |
+| [`SupplierSeeder`](database/seeders/SupplierSeeder.php) | Proveedores | 3 proveedores |
+| [`WarehouseSeeder`](database/seeders/WarehouseSeeder.php) | Almacenes | 3 almacenes |
+| [`ProductSeeder`](database/seeders/ProductSeeder.php) | Productos | 20 productos |
+| [`StockMovementSeeder`](database/seeders/StockMovementSeeder.php) | Movimientos de Stock | ~100-200 movimientos |
+
+### Orden de Ejecución
+
+El [`DatabaseSeeder`](database/seeders/DatabaseSeeder.php) orquesta la ejecución en el orden correcto:
+
+```mermaid
+flowchart TD
+    A[RoleAndPermissionSeeder] --> B[UserSeeder]
+    B --> C[CategorySeeder]
+    C --> D[SupplierSeeder]
+    D --> E[WarehouseSeeder]
+    E --> F[ProductSeeder]
+    F --> G[StockMovementSeeder]
+    
+    note for G "Dispara StockMovementObserver<br/>para poblar Inventory"
 ```
+
+### Características de los Seeders
+
+- **Trait `DisablesForeignKeyChecking`**: Cada seeder usa el trait para permitir `truncate()` sin errores de foreign keys
+- **Datos Coherentes**: Los seeders obtienen registros existentes para crear relaciones válidas
+- **Factories Inteligentes**: Uso de `recycle()` y closures para mantener integridad referencial
+- **Observer Activo**: `StockMovementSeeder` dispara `StockMovementObserver` automáticamente
+
+### Ejecutar Seeders
+
+```bash
+# Ejecutar todos los seeders
+php artisan db:seed
+
+# Ejecutar un seeder específico
+php artisan db:seed --class=CategorySeeder
+
+# Refrescar y sembrar
+php artisan migrate:fresh --seed
+```
+
+### Usuario de Prueba
+
+| Campo | Valor |
+|-------|-------|
+| Email | admin@stockmaster.com |
+| Password | password |
 
 ## 🧪 Pruebas
 
