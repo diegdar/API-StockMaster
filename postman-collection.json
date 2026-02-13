@@ -1,7 +1,7 @@
 {
     "info": {
         "_postman_id": "stockmaster-api-collection",
-        "name": "StockMaster API",
+        "name": "🚚🏣StockMaster API",
         "description": "API RESTful para la gestion avanzada de inventarios multialmacen",
         "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
     },
@@ -68,7 +68,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n    \"name\": \"Test User\",\n    \"email\": \"test@example.com\",\n    \"password\": \"password123\",\n    \"password_confirmation\": \"password123\"\n}",
+                            "raw": "{\n    \"name\": \"Test User\",\n    \"email\": \"test@example.com\",\n    \"password\": \"Password123!\",\n    \"password_confirmation\": \"Password123!\"\n}",
                             "options": {
                                 "raw": {
                                     "language": "json"
@@ -100,6 +100,19 @@
                                 }
                             ],
                             "body": "{\"message\": \"User registered successfully\", \"data\": {\"user\": {\"id\": 1, \"name\": \"Test User\", \"email\": \"test@example.com\"}, \"access_token\": \"...\", \"token_type\": \"Bearer\"}}"
+                        },
+                        {
+                            "name": "Validation Error - Weak Password",
+                            "status": "Unprocessable Entity",
+                            "code": 422,
+                            "_postman_previewlanguage": "json",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\"message\": \"Validation failed\", \"errors\": {\"password\": [\"The password must be at least 8 characters, contain at least one uppercase letter and one special character.\"]}}"
                         }
                     ]
                 }
