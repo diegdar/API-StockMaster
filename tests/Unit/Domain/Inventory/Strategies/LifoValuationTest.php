@@ -1,5 +1,5 @@
 <?php
-declare(strict_types= 1);
+declare(strict_types=1);
 
 namespace Tests\Unit\Domain\Inventory\Strategies;
 
@@ -7,15 +7,11 @@ use App\Domain\Inventory\Strategies\LifoValuation;
 use App\Models\Product;
 use App\Models\StockMovement;
 use App\Models\Warehouse;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class LifoValuationTest extends TestCase
 {
-    use RefreshDatabase;
-
-    /** @test */
-    public function it_calculates_valuation_using_lifo_method()
+    public function test_it_calculates_valuation_using_lifo_method()
     {
         // Arrange
         $product = Product::factory()->create();

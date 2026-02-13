@@ -7,15 +7,11 @@ use App\Models\Product;
 use App\Models\Warehouse;
 use App\Models\StockMovement;
 use App\Models\Inventory;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class StockUpdateTest extends TestCase
 {
-    use RefreshDatabase;
-
-    /** @test */
-    public function it_updates_inventory_on_incoming_movement()
+    public function test_it_updates_inventory_on_incoming_movement()
     {
         $product = Product::factory()->create();
         $warehouse = Warehouse::factory()->create();
@@ -37,8 +33,7 @@ class StockUpdateTest extends TestCase
         $this->assertEquals(60, $inventory->fresh()->quantity);
     }
 
-    /** @test */
-    public function it_updates_inventory_on_outgoing_movement()
+    public function test_it_updates_inventory_on_outgoing_movement()
     {
         $product = Product::factory()->create();
         $warehouse = Warehouse::factory()->create();
@@ -59,8 +54,7 @@ class StockUpdateTest extends TestCase
         $this->assertEquals(40, $inventory->fresh()->quantity);
     }
 
-    /** @test */
-    public function it_creates_inventory_record_if_not_exists_on_incoming_movement()
+    public function test_it_creates_inventory_record_if_not_exists_on_incoming_movement()
     {
         $product = Product::factory()->create();
         $warehouse = Warehouse::factory()->create();

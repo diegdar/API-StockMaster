@@ -7,13 +7,10 @@ use App\Domain\Inventory\Services\InventoryValuationService;
 use App\Models\Product;
 use App\Models\StockMovement;
 use App\Models\Warehouse;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class InventoryValuationServiceTest extends TestCase
 {
-    use RefreshDatabase;
-
     private InventoryValuationService $service;
 
     protected function setUp(): void
@@ -22,8 +19,7 @@ class InventoryValuationServiceTest extends TestCase
         $this->service = app(InventoryValuationService::class);
     }
 
-    /** @test */
-    public function it_calculates_valuation_using_the_correct_strategy()
+    public function test_it_calculates_valuation_using_the_correct_strategy()
     {
         $product = Product::factory()->create(['valuation_strategy' => 'fifo']);
         $warehouse = Warehouse::factory()->create();

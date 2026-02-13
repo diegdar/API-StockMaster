@@ -6,13 +6,10 @@ namespace Tests\Feature\Api\Security;
 use App\Models\User;
 use Laravel\Passport\Passport;
 use Tests\TestCase;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class RateLimitingTest extends TestCase
 {
-    use RefreshDatabase;
-    /** @test */
-    public function it_limits_api_requests()
+    public function test_it_limits_api_requests()
     {
         $user = User::factory()->create();
         Passport::actingAs($user);

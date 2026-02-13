@@ -7,16 +7,12 @@ use App\Models\StockMovement;
 
 use App\Domain\Inventory\Strategies\FifoValuation;
 use App\Models\Product;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 use App\Models\Warehouse;
 
 class FifoValuationTest extends TestCase
 {
-    use RefreshDatabase;
-
-    /** @test */
-    public function it_calculates_valuation_using_fifo_method()
+    public function test_it_calculates_valuation_using_fifo_method()
     {
         // Arrange
         $product = Product::factory()->create();

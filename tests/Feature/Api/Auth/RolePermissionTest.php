@@ -1,25 +1,21 @@
 <?php
-declare (strict_types= 1);
+declare(strict_types=1);
 
 namespace Tests\Feature\Api\Auth;
 
 use App\Models\User;
 use Database\Seeders\RoleAndPermissionSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class RolePermissionTest extends TestCase
 {
-    use RefreshDatabase;
-
     protected function setUp(): void
     {
         parent::setUp();
         $this->seed(RoleAndPermissionSeeder::class);
     }
 
-    /** @test */
-    public function an_admin_has_all_permissions()
+    public function test_an_admin_has_all_permissions()
     {
         $admin = User::factory()->create();
         $admin->assignRole('Admin');
@@ -30,8 +26,7 @@ class RolePermissionTest extends TestCase
         $this->assertTrue($admin->hasPermissionTo('view inventory'));
     }
 
-    /** @test */
-    public function a_worker_has_limited_permissions()
+    public function test_a_worker_has_limited_permissions()
     {
         $worker = User::factory()->create();
         $worker->assignRole('Worker');
@@ -42,8 +37,7 @@ class RolePermissionTest extends TestCase
         $this->assertTrue($worker->hasPermissionTo('view inventory'));
     }
 
-    /** @test */
-    public function a_viewer_only_has_read_permissions()
+    public function test_a_viewer_only_has_read_permissions()
     {
         $viewer = User::factory()->create();
         $viewer->assignRole('Viewer');

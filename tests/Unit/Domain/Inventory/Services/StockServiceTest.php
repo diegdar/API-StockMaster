@@ -8,13 +8,10 @@ use App\Models\Product;
 use App\Models\Warehouse;
 use App\Models\StockMovement;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class StockServiceTest extends TestCase
 {
-    use RefreshDatabase;
-
     private StockService $service;
     private User $user;
 
@@ -26,8 +23,7 @@ class StockServiceTest extends TestCase
         $this->service = app(StockService::class);
     }
 
-    /** @test */
-    public function it_can_record_an_in_movement()
+    public function test_it_can_record_an_in_movement()
     {
         $product = Product::factory()->create();
         $warehouse = Warehouse::factory()->create();
@@ -48,8 +44,7 @@ class StockServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
-    public function it_can_record_an_out_movement()
+    public function test_it_can_record_an_out_movement()
     {
         $product = Product::factory()->create();
         $warehouse = Warehouse::factory()->create();
@@ -69,8 +64,7 @@ class StockServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
-    public function it_can_record_a_transfer_movement()
+    public function test_it_can_record_a_transfer_movement()
     {
         $product = Product::factory()->create();
         $sourceWarehouse = Warehouse::factory()->create(['name' => 'Source']);

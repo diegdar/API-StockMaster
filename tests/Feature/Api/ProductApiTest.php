@@ -8,14 +8,11 @@ use App\Models\User;
 use App\Models\Category;
 use App\Models\Supplier;
 use Database\Seeders\RoleAndPermissionSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Passport\Passport;
 use Tests\TestCase;
 
 class ProductApiTest extends TestCase
 {
-    use RefreshDatabase;
-
     protected function setUp(): void
     {
         parent::setUp();
@@ -26,7 +23,7 @@ class ProductApiTest extends TestCase
      * @test
      * @dataProvider productPermissionsProvider
      */
-    public function it_verifies_product_endpoint_permissions(string $role, string $method, string $routeName, int $expectedStatus)
+    public function test_it_verifies_product_endpoint_permissions(string $role, string $method, string $routeName, int $expectedStatus)
     {
         $user = User::factory()->create();
         $user->assignRole($role);
@@ -83,10 +80,7 @@ class ProductApiTest extends TestCase
         ];
     }
 
-    /**
-     * @test
-     */
-    public function admin_sees_all_fields_including_sensitive_data()
+    public function test_admin_sees_all_fields_including_sensitive_data()
     {
         $admin = User::factory()->create();
         $admin->assignRole('Admin');
@@ -123,10 +117,7 @@ class ProductApiTest extends TestCase
             ]);
     }
 
-    /**
-     * @test
-     */
-    public function worker_sees_operational_fields_but_not_sensitive_financial_data()
+    public function test_worker_sees_operational_fields_but_not_sensitive_financial_data()
     {
         $worker = User::factory()->create();
         $worker->assignRole('Worker');
@@ -163,10 +154,7 @@ class ProductApiTest extends TestCase
             ]);
     }
 
-    /**
-     * @test
-     */
-    public function viewer_sees_only_public_fields()
+    public function test_viewer_sees_only_public_fields()
     {
         $viewer = User::factory()->create();
         $viewer->assignRole('Viewer');
