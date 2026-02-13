@@ -3,9 +3,9 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
+use Hash;
 use Illuminate\Database\Seeder;
 use App\Models\User;
-use Spatie\Permission\Models\Role;
 use Database\Seeders\Traits\DisablesForeignKeyChecking;
 
 class UserSeeder extends Seeder
@@ -23,6 +23,7 @@ class UserSeeder extends Seeder
         User::create([
             'name' => 'Admin User',
             'email' => 'admin@stockmaster.com',
+            'password'=> Hash::make('Password$123'),
         ])->assignRole('Admin');
         
         User::factory(10)->create()->each(function (User $user) {

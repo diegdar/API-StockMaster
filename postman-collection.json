@@ -37,6 +37,86 @@
             "name": "Authentication",
             "item": [
                 {
+                    "name": "Login User",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 200) {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    if (jsonData.data && jsonData.data.access_token) {",
+                                    "        pm.collectionVariables.set('accessToken', jsonData.data.access_token);",
+                                    "    }",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"email\": \"admin@stockmaster.com\",\n    \"password\": \"Password$1234\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/login",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "login"
+                            ]
+                        },
+                        "description": "Login with email and password. Returns access token for authentication."
+                    },
+                    "response": [
+                        {
+                            "name": "Login Success",
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\"message\": \"Login successful\", \"data\": {\"user\": {\"id\": 1, \"name\": \"Test User\", \"email\": \"admin@stockmaster.com\"}, \"access_token\": \"...\", \"token_type\": \"Bearer\"}}"
+                        },
+                        {
+                            "name": "Invalid Credentials",
+                            "status": "Unauthorized",
+                            "code": 401,
+                            "_postman_previewlanguage": "json",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\"message\": \"Invalid credentials\", \"errors\": {\"email\": [\"The provided credentials are incorrect.\"]}}"
+                        }
+                    ]
+                },
+                {
                     "name": "Register User",
                     "event": [
                         {
@@ -68,7 +148,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n    \"name\": \"Test User\",\n    \"email\": \"test@example.com\",\n    \"password\": \"Password123!\",\n    \"password_confirmation\": \"Password123!\"\n}",
+                            "raw": "{\n    \"name\": \"Test User\",\n    \"email\": \"admin@stockmaster.com\",\n    \"password\": \"Password$1234\",\n    \"password_confirmation\": \"Password$1234\"\n}",
                             "options": {
                                 "raw": {
                                     "language": "json"
@@ -99,7 +179,7 @@
                                     "value": "application/json"
                                 }
                             ],
-                            "body": "{\"message\": \"User registered successfully\", \"data\": {\"user\": {\"id\": 1, \"name\": \"Test User\", \"email\": \"test@example.com\"}, \"access_token\": \"...\", \"token_type\": \"Bearer\"}}"
+                            "body": "{\"message\": \"User registered successfully\", \"data\": {\"user\": {\"id\": 1, \"name\": \"Test User\", \"email\": \"admin@stockmaster.com\"}, \"access_token\": \"...\", \"token_type\": \"Bearer\"}}"
                         },
                         {
                             "name": "Validation Error - Weak Password",
@@ -164,7 +244,7 @@
                                     "value": "application/json"
                                 }
                             ],
-                            "body": "{\"id\": 1, \"name\": \"Test User\", \"email\": \"test@example.com\", \"roles\": [{\"id\": 1, \"name\": \"Viewer\", \"guard_name\": \"api\"}]}"
+                            "body": "{\"id\": 1, \"name\": \"Test User\", \"email\": \"admin@stockmaster.com\", \"roles\": [{\"id\": 1, \"name\": \"Viewer\", \"guard_name\": \"api\"}]}"
                         }
                     ]
                 }

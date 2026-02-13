@@ -51,6 +51,9 @@ El diseño se basa en la separación de tablas de catálogo y transacciones:
 | Método | Endpoint | Acción del Controlador | Descripción |
 |--------|----------|------------------------|-------------|
 | POST | `/api/auth/register` | [`AuthController@register`](app/Http/Controllers/Api/AuthController.php:26) | Registrar nuevo usuario |
+| POST | `/api/auth/login` | [`AuthController@login`](app/Http/Controllers/Api/AuthController.php:63) | Iniciar sesión |
+
+> **Nota:** El endpoint de login tiene rate limiting de 5 intentos por minuto.
 
 ### Perfil de Usuario (Protegido)
 
@@ -266,7 +269,7 @@ La colección incluye las siguientes variables:
 
 ### Flujo de Prueba Recomendado
 
-1. **Registrar usuario**: `POST /auth/register` → Configura automáticamente `{{accessToken}}`
+1. **Iniciar sesión** (o registrar): `POST /auth/login` → Obtiene `{accessToken}`
 2. **Listar productos**: `GET /products` → Obtiene el primer ID de producto
 3. **Probar endpoints**: Usa el ID obtenido para probar Show, Update y Delete
 
