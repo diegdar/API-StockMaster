@@ -18,7 +18,7 @@
         },
         {
             "key": "productId",
-            "value": "",
+            "value": "1",
             "type": "string"
         }
     ],
@@ -342,7 +342,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n    \"name\": \"New Product\",\n    \"sku\": \"SKU-NEW-001\",\n    \"description\": \"A new product\",\n    \"unit_price\": 149.99,\n    \"unit_cost\": 75.00,\n    \"category_id\": 1,\n    \"supplier_id\": 1,\n    \"valuation_strategy\": \"fifo\",\n    \"min_stock_level\": 10\n}",
+                            "raw": "{\n    \"name\": \"Tornillo 25mm\",\n    \"sku\": \"PROD-NEW-999\",\n    \"description\": \"A new product\",\n    \"unit_price\": 149.99,\n    \"unit_cost\": 75.00,\n    \"category_id\": 1,\n    \"supplier_id\": 1,\n    \"valuation_strategy\": \"fifo\",\n    \"min_stock_level\": 10\n}",
                             "options": {
                                 "raw": {
                                     "language": "json"
@@ -372,7 +372,7 @@
                                     "value": "application/json"
                                 }
                             ],
-                            "body": "{\"id\": 1, \"name\": \"New Product\", \"sku\": \"SKU-NEW-001\", \"unit_price\": 149.99, \"unit_cost\": 75.00, \"category_id\": 1, \"supplier_id\": 1, \"valuation_strategy\": \"fifo\", \"min_stock_level\": 10}"
+                            "body": "{\"id\": 1, \"name\": \"Tornillo 25mm\", \"sku\": \"PROD-NEW-001\", \"unit_price\": 149.99, \"unit_cost\": 75.00, \"category_id\": 1, \"supplier_id\": 1, \"valuation_strategy\": \"fifo\", \"min_stock_level\": 10}"
                         }
                     ]
                 },
@@ -420,7 +420,7 @@
                                     "value": "application/json"
                                 }
                             ],
-                            "body": "{\"id\": 1, \"name\": \"New Product\", \"sku\": \"SKU-NEW-001\", \"unit_price\": 149.99, \"unit_cost\": 75.00, \"category_id\": 1, \"supplier_id\": 1, \"valuation_strategy\": \"fifo\", \"min_stock_level\": 10}"
+                            "body": "{\"id\": 1, \"name\": \"Tornillo 25mm\", \"sku\": \"PROD-NEW-001\", \"unit_price\": 149.99, \"unit_cost\": 75.00, \"category_id\": 1, \"supplier_id\": 1, \"valuation_strategy\": \"fifo\", \"min_stock_level\": 10}"
                         }
                     ]
                 },
@@ -450,7 +450,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n    \"name\": \"Updated Product\",\n    \"sku\": \"SKU-NEW-001\",\n    \"description\": \"Updated description\",\n    \"unit_price\": 179.99,\n    \"unit_cost\": 85.00,\n    \"category_id\": 1,\n    \"supplier_id\": 1,\n    \"valuation_strategy\": \"fifo\",\n    \"min_stock_level\": 15\n}",
+                            "raw": "{\n    \"name\": \"Updated Product\",\n    \"sku\": \"PROD-NEW-001\",\n    \"description\": \"Updated description\",\n    \"unit_price\": 179.99,\n    \"unit_cost\": 85.00,\n    \"category_id\": 1,\n    \"supplier_id\": 1,\n    \"valuation_strategy\": \"fifo\",\n    \"min_stock_level\": 15\n}",
                             "options": {
                                 "raw": {
                                     "language": "json"
@@ -481,7 +481,7 @@
                                     "value": "application/json"
                                 }
                             ],
-                            "body": "{\"id\": 1, \"name\": \"Updated Product\", \"sku\": \"SKU-NEW-001\", \"unit_price\": 179.99, \"unit_cost\": 85.00, \"category_id\": 1, \"supplier_id\": 1, \"valuation_strategy\": \"fifo\", \"min_stock_level\": 15}"
+                            "body": "{\"id\": 1, \"name\": \"Updated Product\", \"sku\": \"PROD-NEW-001\", \"unit_price\": 179.99, \"unit_cost\": 85.00, \"category_id\": 1, \"supplier_id\": 1, \"valuation_strategy\": \"fifo\", \"min_stock_level\": 15}"
                         }
                     ]
                 },
@@ -506,13 +506,13 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{baseUrl}}/products/{{productId}}",
+                            "raw": "{{baseUrl}}/products/21",
                             "host": [
                                 "{{baseUrl}}"
                             ],
                             "path": [
                                 "products",
-                                "{{productId}}"
+                                "21"
                             ]
                         },
                         "description": "Delete a product. Requires Admin role. Returns 204 No Content."

@@ -39,7 +39,9 @@ class ProductController extends Controller implements HasMiddleware
     {
         $product = Product::create($request->validated());
 
-        return new ProductResource($product);
+        return response()->json([
+            'message' => "The Product '{$product->name}' has been created successfully",
+        ], 201);
     }
 
     /**
@@ -67,6 +69,8 @@ class ProductController extends Controller implements HasMiddleware
     {
         $product->delete();
 
-        return response()->noContent();
+        return response()->json([
+            'message' => "The Product has been deleted successfully",
+        ], 204);
     }
 }

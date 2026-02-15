@@ -27,6 +27,17 @@ class ProductSeeder extends Seeder
         if ($categories->isEmpty() || $suppliers->isEmpty()) {
             return;
         }
+        Product::create([
+            'name' => 'Tornillo 25mm',
+            'sku' => 'PROD-NEW-001',
+            'description' => 'A new product',
+            'unit_price' => 149.99,
+            'unit_cost' => 75.00,
+            'category_id' => 1,
+            'supplier_id' => 1,
+            'valuation_strategy' => 'fifo',
+            'min_stock_level' => 10,
+        ]);
 
         Product::factory(20)
             ->recycle($categories)
