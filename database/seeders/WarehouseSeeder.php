@@ -19,6 +19,12 @@ class WarehouseSeeder extends Seeder
 
         $this->enableForeignKeyChecking();
 
-        Warehouse::factory()->count(3)->create();
+        // Hardcoded base warehouses for consistent data
+        Warehouse::create(['name' => 'Almacén Central (Madrid)', 'location' => 'Polígono Industrial Vallecas, Calle Principal 100, Madrid', 'capacity' => 50000, 'is_active' => true]);
+        Warehouse::create(['name' => 'Almacén Norte (Bilbao)', 'location' => 'Zona Portuaria Bilbao, Muelle 15, Bilbao', 'capacity' => 35000, 'is_active' => true]);
+        Warehouse::create(['name' => 'Almacén Sur (Sevilla)', 'location' => 'Parque Logístico Sevilla, Nave 8, Sevilla', 'capacity' => 40000, 'is_active' => true]);
+
+        // Additional random warehouses using factory
+        Warehouse::factory()->count(1)->create();
     }
 }

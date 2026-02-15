@@ -19,6 +19,12 @@ class CategorySeeder extends Seeder
 
         $this->enableForeignKeyChecking();
 
-        Category::factory()->count(5)->create();
+        // Hardcoded base categories for consistent data
+        Category::create(['name' => 'Ferretería General', 'slug' => 'ferreteria-general', 'description' => 'Artículos de ferretería general']);
+        Category::create(['name' => 'Electricidad', 'slug' => 'electricidad', 'description' => 'Materiales y componentes eléctricos']);
+        Category::create(['name' => 'Fontanería', 'slug' => 'fontaneria', 'description' => 'Artículos de fontanería y plumbing']);
+
+        // Additional random categories using factory
+        Category::factory()->count(2)->create();
     }
 }
