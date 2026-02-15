@@ -5,7 +5,9 @@ use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Exceptions\ThrottleRequestsException;
 use Illuminate\Routing\Middleware\ThrottleRequests;
+use Spatie\Permission\Exceptions\UnauthorizedException;
 use Spatie\Permission\Middleware\RoleMiddleware;
 use Spatie\Permission\Middleware\PermissionMiddleware;
 use Spatie\Permission\Middleware\RoleOrPermissionMiddleware;
@@ -37,25 +39,25 @@ return Application::configure(basePath: dirname(__DIR__))
             return response()->json(['error' => 'Recurso no encontrado'], 404);
         });
 
-        $exceptions->reportable(function (AuthenticationException $e) {
-            Log::error('Error de autenticación: ' . $e->getMessage());
-        });
         $exceptions->renderable(function (AuthenticationException $e) {
             return response()->json(['error' => 'No autenticado'], 401);
         });
 
-
-        $exceptions->reportable(function (AuthorizationException $e) {
-            Log::error('Error de autorización: ' . $e->getMessage());
-        });
         $exceptions->renderable(function (AuthorizationException $e) {
             return response()->json(['error' => 'No autorizado'], 403);
         });
 
-        $exceptions->reportable(function (Throwable $e) {
-            Log::error('Error interno del servidor: ' . $e->getMessage());
+        // Handle Spatie Permission UnauthorizedException
+        $exceptions->renderable(function (UnauthorizedException $e) {
+            return response()->json(['error' => 'No autorizado'], 403);
         });
-        $exceptions->renderable(function (Throwable $e) {
+
+        // Handle Rate Limiting (ThrottleRequestsException)
+        $exceptions->renderable(function (ThrottleRequestsException $e) {
+            return response()->json(['error' => 'Demasiadas solicitudes'], 429);
+        });
+
+        $exceptions->renderable(function (\Throwable $e) {
             return response()->json(['error' => 'Error interno del servidor'], 500);
         });
     })->create();
