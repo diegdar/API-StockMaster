@@ -71,6 +71,18 @@ El diseño se basa en la separación de tablas de catálogo y transacciones:
 | PUT/PATCH | `/api/products/{id}` | [`ProductController@update`](app/Http/Controllers/Api/ProductController.php:52) | Actualizar producto |
 | DELETE | `/api/products/{id}` | [`ProductController@destroy`](app/Http/Controllers/Api/ProductController.php:65) | Eliminar producto |
 
+### Categorías (Protegido)
+
+| Método | Endpoint | Acción del Controlador | Descripción |
+|--------|----------|------------------------|-------------|
+| GET | `/api/categories` | [`CategoryController@index`](app/Http/Controllers/Api/CategoryController.php:29) | Listar todas las categorías |
+| POST | `/api/categories` | [`CategoryController@store`](app/Http/Controllers/Api/CategoryController.php:39) | Crear nueva categoría |
+| GET | `/api/categories/{id}` | [`CategoryController@show`](app/Http/Controllers/Api/CategoryController.php:54) | Mostrar categoría individual |
+| PUT/PATCH | `/api/categories/{id}` | [`CategoryController@update`](app/Http/Controllers/Api/CategoryController.php:64) | Actualizar categoría |
+| DELETE | `/api/categories/{id}` | [`CategoryController@destroy`](app/Http/Controllers/Api/CategoryController.php:77) | Eliminar categoría |
+
+> **Nota:** No se puede eliminar una categoría que tenga productos asociados. Retorna 422 con mensaje de error indicando la cantidad de productos.
+
 ### Cabeceras de Petición
 
 Todos los endpoints protegidos requieren:

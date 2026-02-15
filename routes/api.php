@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ProductController;
+use App\Http\Controllers\Api\CategoryController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -16,4 +17,5 @@ Route::middleware(['auth:api', 'throttle:api'])->group(function () {
     })->name('user.profile');
 
     Route::apiResource('products', ProductController::class)->names('products');
+    Route::apiResource('categories', CategoryController::class)->names('categories');
 });

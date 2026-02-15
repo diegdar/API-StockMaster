@@ -20,6 +20,11 @@
             "key": "productId",
             "value": "1",
             "type": "string"
+        },
+        {
+            "key": "categoryId",
+            "value": "1",
+            "type": "string"
         }
     ],
     "auth": {
@@ -525,6 +530,299 @@
                             "_postman_previewlanguage": "json",
                             "header": [],
                             "body": ""
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Categories",
+            "item": [
+                {
+                    "name": "List Categories",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 200) {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    if (jsonData.data && jsonData.data.length > 0) {",
+                                    "        pm.collectionVariables.set('categoryId', jsonData.data[0].id);",
+                                    "    }",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{accessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/categories",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "categories"
+                            ]
+                        },
+                        "description": "Retrieve a paginated list of categories. Requires authentication (all roles)."
+                    },
+                    "response": [
+                        {
+                            "name": "Categories List Success",
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\"data\":[{\"id\":1,\"name\":\"Electronics\",\"slug\":\"electronics\",\"description\":\"Electronic devices and components\",\"created_at\":\"2026-01-01T00:00:00.000000Z\",\"updated_at\":\"2026-01-01T00:00:00.000000Z\",\"products_count\":5}],\"links\":{\"first\":\"...?page=1\",\"last\":\"...?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"last_page\":1,\"per_page\":15,\"total\":5}}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Create Category",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{accessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"Home & Garden\",\n    \"description\": \"Products for home and garden maintenance\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/categories",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "categories"
+                            ]
+                        },
+                        "description": "Create a new category. Requires Admin role. Slug is auto-generated from name."
+                    },
+                    "response": [
+                        {
+                            "name": "Category Created",
+                            "status": "Created",
+                            "code": 201,
+                            "_postman_previewlanguage": "json",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\"data\":{\"id\":6,\"name\":\"Home & Garden\",\"slug\":\"home-garden\",\"description\":\"Products for home and garden maintenance\",\"created_at\":\"2026-02-15T12:00:00.000000Z\",\"updated_at\":\"2026-02-15T12:00:00.000000Z\",\"products_count\":0}}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Show Category",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{accessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/categories/{{categoryId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "categories",
+                                "{{categoryId}}"
+                            ]
+                        },
+                        "description": "Retrieve a specific category by ID. Requires authentication (all roles)."
+                    },
+                    "response": [
+                        {
+                            "name": "Category Show Success",
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\"data\":{\"id\":1,\"name\":\"Electronics\",\"slug\":\"electronics\",\"description\":\"Electronic devices and components\",\"created_at\":\"2026-01-01T00:00:00.000000Z\",\"updated_at\":\"2026-01-01T00:00:00.000000Z\",\"products_count\":5}}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Update Category",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{accessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"Electronics & Technology\",\n    \"description\": \"Electronic devices, components and technology products\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/categories/{{categoryId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "categories",
+                                "{{categoryId}}"
+                            ]
+                        },
+                        "description": "Update a category. Requires Admin role. Slug is auto-regenerated if name changes."
+                    },
+                    "response": [
+                        {
+                            "name": "Category Updated",
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\"data\":{\"id\":1,\"name\":\"Electronics & Technology\",\"slug\":\"electronics-technology\",\"description\":\"Electronic devices, components and technology products\",\"created_at\":\"2026-01-01T00:00:00.000000Z\",\"updated_at\":\"2026-02-15T12:00:00.000000Z\",\"products_count\":5}}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Delete Category",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{accessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/categories/{{categoryId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "categories",
+                                "{{categoryId}}"
+                            ]
+                        },
+                        "description": "Delete a category. Requires Admin role. Returns 204 No Content."
+                    },
+                    "response": [
+                        {
+                            "name": "Category Deleted",
+                            "status": "No Content",
+                            "code": 204,
+                            "_postman_previewlanguage": "json",
+                            "header": [],
+                            "body": ""
+                        },
+                        {
+                            "name": "Cannot Delete - Has Products",
+                            "status": "Unprocessable Entity",
+                            "code": 422,
+                            "_postman_previewlanguage": "json",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\"message\":\"Cannot delete category because it has associated products. Please remove or reassign the products first.\",\"errors\":{\"category\":[\"This category has 4 associated product(s).\"]}}"
                         }
                     ]
                 }
