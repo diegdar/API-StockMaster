@@ -11,8 +11,10 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Schema;
 use App\Models\StockMovement;
 use App\Models\Category;
+use App\Models\Warehouse;
 use App\Observers\StockMovementObserver;
 use App\Observers\CategoryObserver;
+use App\Observers\WarehouseObserver;
 
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Support\Facades\RateLimiter;
@@ -37,6 +39,7 @@ class AppServiceProvider extends ServiceProvider
         Schema::defaultStringLength(191);
         StockMovement::observe(StockMovementObserver::class);
         Category::observe(CategoryObserver::class);
+        Warehouse::observe(WarehouseObserver::class);
 
         RateLimiter::for('api', function (Request $request) {
             return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());

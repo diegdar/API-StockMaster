@@ -14,6 +14,7 @@ return new class extends Migration {
         Schema::create('warehouses', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->string('slug')->unique();
             $table->string('location');
             $table->integer('capacity')->nullable()->comment('Max items capacity');
             $table->boolean('is_active')->default(true);
