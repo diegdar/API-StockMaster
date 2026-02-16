@@ -41,14 +41,14 @@ class CategoryService
         return $this->repository->update($category, $dto->toArray());
     }
 
-    public function deleteCategory(Category $category): bool
+    public function deleteCategory(Category $category): void
     {
         if ($category->products()->count() > 0) {
             throw new DeletionException(
-                "Cannot delete category because it has associated products."
+                "Cannot delete category because it has associated products. Please remove or reassign the products first."
             );
         }
 
-        return $this->repository->delete($category);
+        $this->repository->delete($category);
     }
 }

@@ -3,20 +3,28 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
+use App\DTO\Category\CreateCategoryDTO;
+use App\DTO\Category\UpdateCategoryDTO;
+use App\Exceptions\DeletionException;
 use App\Http\Controllers\Controller;
-use App\Models\Category;
-use App\Http\Resources\CategoryResource;
 use App\Http\Requests\StoreCategoryRequest;
 use App\Http\Requests\UpdateCategoryRequest;
+use App\Http\Resources\CategoryResource;
+use App\Models\Category;
+use App\Services\CategoryService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use Illuminate\Routing\Controllers\HasMiddleware;
-use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 
 class CategoryController extends Controller implements HasMiddleware
 {
     use AuthorizesRequests;
+
+    public function __construct(
+        private readonly CategoryService $categoryService
+    ) {}
 
     public static function middleware(): array
     {
@@ -26,24 +34,18 @@ class CategoryController extends Controller implements HasMiddleware
         ];
     }
 
-    /**
-     * Display a listing of the resource.
-     */
     public function index(): AnonymousResourceCollection
     {
-        $categories = Category::withCount('products')->paginate(15);
+        $categories = $this->categoryService->getAllCategories();
+        $categories->loadCount('products');
 
         return CategoryResource::collection($categories);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(StoreCategoryRequest $request): JsonResponse
     {
-        $category = Category::create($request->validated());
-
-        $category->loadCount('products');
+        $dto = CreateCategoryDTO::fromArray($request->validated());
+        $category = $this->categoryService->createCategory($dto);
 
         return response()->json([
             'message' => "The Category '{$category->name}' has been created successfully",
@@ -51,9 +53,6 @@ class CategoryController extends Controller implements HasMiddleware
         ], 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(Category $category): CategoryResource
     {
         $category->loadCount('products');
@@ -61,38 +60,21 @@ class CategoryController extends Controller implements HasMiddleware
         return new CategoryResource($category);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(UpdateCategoryRequest $request, Category $category): CategoryResource
     {
-        $category->update($request->validated());
+        $dto = UpdateCategoryDTO::fromArray($request->validated());
 
-        $category->loadCount('products');
+        $category = $this->categoryService->updateCategory($category, $dto);
 
         return new CategoryResource($category);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Category $category):JsonResponse
+    public function destroy(Category $category): JsonResponse
     {
-        $productsInCategory = $category->products()->count();
-        if ($productsInCategory > 0) {
-            return response()->json([
-                'message' => 'Cannot delete category because it has associated products. Please remove or reassign the products first.',
-                'errors' => [
-                    'category' => ['This category has ' . $productsInCategory . ' associated product(s).'],
-                ],
-            ], 422);
-        }
-
-        $categoryName = $category->name;
-        $category->delete();
+        $this->categoryService->deleteCategory($category);
 
         return response()->json([
-            'message' => "The Category '{$categoryName}' has been deleted successfully",
+            'message' => "The Category has been deleted successfully",
         ], 204);
     }
 }

@@ -42,8 +42,8 @@ class CategoryRepository implements CategoryRepositoryInterface
         return $category->fresh();
     }
 
-    public function delete(Category $category): bool
+    public function delete(Category $category): void
     {
-        return $category->delete();
+        $category->delete();
     }
 }
