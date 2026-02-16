@@ -5,8 +5,10 @@ namespace App\Providers;
 
 use App\Repositories\Contracts\CategoryRepositoryInterface;
 use App\Repositories\Contracts\ProductRepositoryInterface;
+use App\Repositories\Contracts\WarehouseRepositoryInterface;
 use App\Repositories\CategoryRepository;
 use App\Repositories\ProductRepository;
+use App\Repositories\WarehouseRepository;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Schema;
 use App\Models\StockMovement;
@@ -29,6 +31,7 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->bind(ProductRepositoryInterface::class, ProductRepository::class);
         $this->app->bind(CategoryRepositoryInterface::class, CategoryRepository::class);
+        $this->app->bind(WarehouseRepositoryInterface::class, WarehouseRepository::class);
     }
 
     /**
