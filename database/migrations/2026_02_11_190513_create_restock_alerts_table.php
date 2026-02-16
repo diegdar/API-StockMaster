@@ -13,7 +13,7 @@ return new class extends Migration {
     {
         Schema::create('restock_alerts', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('product_id')->constrained()->onDelete('cascade');
+            $table->foreignId('product_id')->constrained()->onDelete('restrict');
             $table->foreignId('warehouse_id')->constrained()->onDelete('cascade');
             $table->integer('threshold');
             $table->boolean('is_active')->default(true);
