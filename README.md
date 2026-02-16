@@ -227,28 +227,42 @@ php artisan test --coverage
 ```
 API StockMaster/
 ├── app/
+│   ├── DTO/                       # Data Transfer Objects
+│   │   └── Product/               # Product DTOs (Create, Update)
 │   ├── Domain/
-│   │   └── Inventory/          # Capa de lógica de negocio
-│   │       ├── Contracts/      # Definiciones de interfaces
-│   │       ├── Factories/      # Implementaciones de patrón Factory
-│   │       ├── Services/       # Servicios de negocio
-│   │       └── Strategies/     # Estrategias de valoración
+│   │   └── Inventory/             # Capa de lógica de negocio
+│   │       ├── Contracts/         # Definiciones de interfaces
+│   │       ├── Factories/         # Implementaciones de patrón Factory
+│   │       ├── Services/          # Servicios de negocio
+│   │       └── Strategies/        # Estrategias de valoración
 │   ├── Http/
-│   │   ├── Controllers/Api/    # Controladores de API
-│   │   ├── Requests/           # Validación FormRequest
-│   │   └── Resources/          # Transformadores de recursos API
-│   ├── Models/                 # Modelos Eloquent
-│   └── Observers/              # Observadores de modelos (StockMovementObserver)
+│   │   ├── Controllers/Api/       # Controladores de API
+│   │   ├── Requests/              # Validación FormRequest
+│   │   └── Resources/             # Transformadores de recursos API
+│   ├── Models/                    # Modelos Eloquent
+│   ├── Observers/                 # Observadores de modelos (StockMovementObserver)
+│   └── Repositories/              # Repository Pattern
+│       ├── Contracts/             # Interfaces de repositorio
+│       └── ProductRepository.php  # Implementación de repositorio
 ├── database/
-│   ├── factories/             # Factorías de modelos
-│   ├── migrations/            # Migraciones de base de datos
-│   └── seeders/               # Seeders de base de datos
+│   ├── factories/                 # Factorías de modelos
+│   ├── migrations/                # Migraciones de base de datos
+│   └── seeders/                  # Seeders de base de datos
 ├── routes/
-│   └── api.php                # Definición de rutas API
-└── tests/                     # Pruebas Feature y Unit
+│   └── api.php                    # Definición de rutas API
+└── tests/                        # Pruebas Feature y Unit
 ```
 
 ## 🔧 Servicios Clave
+
+### ProductRepository
+Abstrae el acceso a datos de productos, proporcionando métodos para consultas complejas:
+- `getAll()` - Listado paginado con relaciones
+- `findById()` / `findBySku()` - Búsqueda por ID o SKU
+- `getLowStockProducts()` - Productos bajo stock mínimo
+- `getProductsByWarehouse()` - Productos por almacén
+- `getProductsBySupplier()` - Productos por proveedor
+- `getProductsByCategory()` - Productos por categoría
 
 ### StockService
 Gestiona movimientos de stock (ENTRADA/SALIDA) con actualizaciones automáticas de inventario.
