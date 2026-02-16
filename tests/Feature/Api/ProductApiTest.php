@@ -7,6 +7,10 @@ use App\Models\Product;
 use App\Models\User;
 use App\Models\Category;
 use App\Models\Supplier;
+use App\Models\Warehouse;
+use App\Models\Inventory;
+use App\Models\StockMovement;
+use App\Models\RestockAlert;
 use Database\Seeders\RoleAndPermissionSeeder;
 use Laravel\Passport\Passport;
 use Tests\TestCase;
@@ -62,7 +66,7 @@ class ProductApiTest extends TestCase
             'Admin can show product' => ['Admin', 'GET', 'products.show', 200],
             'Admin can create product' => ['Admin', 'POST', 'products.store', 201],
             'Admin can update product' => ['Admin', 'PUT', 'products.update', 200],
-            'Admin can delete product' => ['Admin', 'DELETE', 'products.destroy', 204],
+            'Admin can delete product' => ['Admin', 'DELETE', 'products.destroy', 200],
 
             // Worker: Read-only Access (for catalog)
             'Worker can list products' => ['Worker', 'GET', 'products.index', 200],
@@ -184,5 +188,99 @@ class ProductApiTest extends TestCase
                 'unit_cost' => 50.00,
                 'margin' => 50.00,
             ]);
+    }
+
+    public function test_admin_can_delete_product_without_relations()
+    {
+        $admin = User::factory()->create();
+        $admin->assignRole('Admin');
+        Passport::actingAs($admin);
+
+        $product = Product::factory()->create();
+
+        $response = $this->deleteJson(route('products.destroy', $product->id));
+
+        $response->assertStatus(200)
+            ->assertJsonFragment([
+                'message' => "The Product has been deleted successfully",
+            ]);
+
+        $this->assertDatabaseMissing('products', ['id' => $product->id]);
+    }
+
+    public function test_admin_cannot_delete_product_with_inventory()
+    {
+        $admin = User::factory()->create();
+        $admin->assignRole('Admin');
+        Passport::actingAs($admin);
+
+        $warehouse = Warehouse::factory()->create();
+        $product = Product::factory()->create();
+        Inventory::factory()->create([
+            'product_id' => $product->id,
+            'warehouse_id' => $warehouse->id,
+            'quantity' => 100,
+        ]);
+
+        $response = $this->deleteJson(route('products.destroy', $product->id));
+
+        $response->assertStatus(422)
+            ->assertJsonFragment([
+                'message' => 'Cannot delete product because it has inventory records. Adjust inventory to zero first.',
+            ]);
+
+        $this->assertDatabaseHas('products', ['id' => $product->id]);
+    }
+
+    public function test_admin_cannot_delete_product_with_stock_movements()
+    {
+        $admin = User::factory()->create();
+        $admin->assignRole('Admin');
+        Passport::actingAs($admin);
+
+        $warehouse = Warehouse::factory()->create();
+        $product = Product::factory()->create();
+        StockMovement::factory()->create([
+            'product_id' => $product->id,
+            'warehouse_id' => $warehouse->id,
+            'user_id' => $admin->id,
+            'type' => 'in',
+            'quantity' => 50,
+        ]);
+
+        // StockMovementObserver creates Inventory, so inventory check fails first
+        $response = $this->deleteJson(route('products.destroy', $product->id));
+
+        $response->assertStatus(422)
+            ->assertJsonFragment([
+                'message' => 'Cannot delete product because it has inventory records. Adjust inventory to zero first.',
+            ]);
+
+        $this->assertDatabaseHas('products', ['id' => $product->id]);
+    }
+
+    public function test_admin_cannot_delete_product_with_active_alerts()
+    {
+        $admin = User::factory()->create();
+        $admin->assignRole('Admin');
+        Passport::actingAs($admin);
+
+        $warehouse = Warehouse::factory()->create();
+        $product = Product::factory()->create();
+        RestockAlert::factory()->create([
+            'product_id' => $product->id,
+            'warehouse_id' => $warehouse->id,
+            'is_active' => true,
+            'threshold' => 10,
+        ]);
+
+        $response = $this->deleteJson(route('products.destroy', $product->id));
+
+        $response->assertStatus(422)
+            ->assertJsonFragment([
+                'message' => 'Cannot delete product because it has active restock alerts. Resolve alerts first.',
+            ]);
+
+        $this->assertDatabaseHas('products', ['id' => $product->id]);
     }
 }
