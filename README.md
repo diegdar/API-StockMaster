@@ -228,7 +228,8 @@ php artisan test --coverage
 API StockMaster/
 ├── app/
 │   ├── DTO/                       # Data Transfer Objects
-│   │   └── Product/               # Product DTOs (Create, Update)
+│   │   ├── Product/               # Product DTOs (Create, Update)
+│   │   └── Category/              # Category DTOs (Create, Update)
 │   ├── Domain/
 │   │   └── Inventory/             # Capa de lógica de negocio
 │   │       ├── Contracts/         # Definiciones de interfaces
@@ -241,9 +242,12 @@ API StockMaster/
 │   │   └── Resources/             # Transformadores de recursos API
 │   ├── Models/                    # Modelos Eloquent
 │   ├── Observers/                 # Observadores de modelos (StockMovementObserver)
+│   ├── Services/                  # Servicios de negocio
+│   │   └── CategoryService.php    # Servicio de categorías
 │   └── Repositories/              # Repository Pattern
 │       ├── Contracts/             # Interfaces de repositorio
-│       └── ProductRepository.php  # Implementación de repositorio
+│       ├── ProductRepository.php # Implementación de repositorio
+│       └── CategoryRepository.php # Repositorio de categorías
 ├── database/
 │   ├── factories/                 # Factorías de modelos
 │   ├── migrations/                # Migraciones de base de datos
@@ -255,6 +259,11 @@ API StockMaster/
 
 ## 🔧 Servicios Clave
 
+### DTOs (Data Transfer Objects)
+Los DTOs encapsulan datos para transferirlos entre capas:
+- **Product DTOs:** `CreateProductDTO`, `UpdateProductDTO`
+- **Category DTOs:** `CreateCategoryDTO`, `UpdateCategoryDTO` (campos nullable para actualizaciones parciales)
+
 ### ProductRepository
 Abstrae el acceso a datos de productos, proporcionando métodos para consultas complejas:
 - `getAll()` - Listado paginado con relaciones
@@ -263,6 +272,21 @@ Abstrae el acceso a datos de productos, proporcionando métodos para consultas c
 - `getProductsByWarehouse()` - Productos por almacén
 - `getProductsBySupplier()` - Productos por proveedor
 - `getProductsByCategory()` - Productos por categoría
+
+### CategoryRepository
+Abstrae el acceso a datos de categorías:
+- `getAll()` - Listado paginado
+- `findById()` / `findBySlug()` - Búsqueda por ID o slug
+- `getCategoriesWithProductCount()` - Categorías con conteo de productos
+- `create()`, `update()`, `delete()` - Operaciones CRUD
+
+### CategoryService
+Gestiona la lógica de negocio de categorías:
+- `getAllCategories()` - Listado paginado
+- `findCategoryById()` / `findCategoryBySlug()` - Búsqueda
+- `createCategory()` - Crear categoría (usa DTO)
+- `updateCategory()` - Actualizar categoría (usa DTO)
+- `deleteCategory()` - Eliminar categoría (lanza DeletionException si tiene productos)
 
 ### StockService
 Gestiona movimientos de stock (ENTRADA/SALIDA) con actualizaciones automáticas de inventario.

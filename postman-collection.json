@@ -791,13 +791,13 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{baseUrl}}/categories/{{categoryId}}",
+                            "raw": "{{baseUrl}}/categories/3",
                             "host": [
                                 "{{baseUrl}}"
                             ],
                             "path": [
                                 "categories",
-                                "{{categoryId}}"
+                                "3"
                             ]
                         },
                         "description": "Delete a category. Requires Admin role. Returns 204 No Content."
