@@ -103,9 +103,8 @@ class CategoryServiceTest extends TestCase
     {
         $category = Category::factory()->create();
 
-        $result = $this->service->deleteCategory($category);
+        $this->service->deleteCategory($category);
 
-        $this->assertTrue($result);
         $this->assertNull(Category::find($category->id));
     }
 

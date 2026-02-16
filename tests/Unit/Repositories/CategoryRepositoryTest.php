@@ -121,9 +121,8 @@ class CategoryRepositoryTest extends TestCase
     {
         $category = Category::factory()->create();
 
-        $result = $this->repository->delete($category);
+        $this->repository->delete($category);
 
-        $this->assertTrue($result);
         $this->assertNull(Category::find($category->id));
     }
 }

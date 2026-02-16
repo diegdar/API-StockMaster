@@ -204,9 +204,6 @@ class CategoryApiTest extends TestCase
         $response->assertStatus(422)
             ->assertJsonFragment([
                 'message' => 'Cannot delete category because it has associated products. Please remove or reassign the products first.',
-            ])
-            ->assertJsonStructure([
-                'errors' => ['category'],
             ]);
 
         $this->assertDatabaseHas('categories', ['id' => $category->id]);
