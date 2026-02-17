@@ -15,16 +15,6 @@ interface WarehouseRepositoryInterface
     public function getAll(int $perPage = 15): LengthAwarePaginator;
 
     /**
-     * Find a warehouse by ID.
-     */
-    public function findById(int $id): ?Warehouse;
-
-    /**
-     * Find a warehouse by slug.
-     */
-    public function findBySlug(string $slug): ?Warehouse;
-
-    /**
      * Create a new warehouse.
      */
     public function create(array $data): Warehouse;
@@ -40,9 +30,9 @@ interface WarehouseRepositoryInterface
     public function delete(Warehouse $warehouse): void;
 
     /**
-     * Get all warehouses with capacity information.
+     * Get all warehouses information.
      */
-    public function getWarehousesWithCapacity(): Collection;
+    public function getAllWarehouses(): Collection;
 
     /**
      * Get all warehouses with inventory count.

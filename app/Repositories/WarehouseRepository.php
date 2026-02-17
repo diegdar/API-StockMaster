@@ -15,23 +15,9 @@ class WarehouseRepository implements WarehouseRepositoryInterface
      */
     public function getAll(int $perPage = 15): LengthAwarePaginator
     {
-        return Warehouse::paginate($perPage);
-    }
-
-    /**
-     * Find a warehouse by ID.
-     */
-    public function findById(int $id): ?Warehouse
-    {
-        return Warehouse::find($id);
-    }
-
-    /**
-     * Find a warehouse by slug.
-     */
-    public function findBySlug(string $slug): ?Warehouse
-    {
-        return Warehouse::where('slug', $slug)->first();
+        return Warehouse::query()
+            ->withCount('inventories')
+            ->paginate($perPage);
     }
 
     /**
@@ -61,9 +47,9 @@ class WarehouseRepository implements WarehouseRepositoryInterface
     }
 
     /**
-     * Get all warehouses with capacity information.
+     * Get all warehouses information.
      */
-    public function getWarehousesWithCapacity(): Collection
+    public function getAllWarehouses(): Collection
     {
         return Warehouse::orderBy('name')->get();
     }
