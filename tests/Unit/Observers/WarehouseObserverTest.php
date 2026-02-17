@@ -4,12 +4,11 @@ declare(strict_types=1);
 namespace Tests\Unit\Observers;
 
 use App\Models\Warehouse;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+
 use Tests\TestCase;
 
 class WarehouseObserverTest extends TestCase
 {
-    use RefreshDatabase;
 
     /**
      * Test that slug is auto-generated from name on create.

@@ -5,14 +5,13 @@ namespace Tests\Unit\Repositories;
 
 use App\Models\Warehouse;
 use App\Repositories\Contracts\WarehouseRepositoryInterface;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+
 use Tests\TestCase;
 use App\Models\Product;
 use App\Models\Inventory;
 
 class WarehouseRepositoryTest extends TestCase
 {
-    use RefreshDatabase;
 
     private WarehouseRepositoryInterface $repository;
 

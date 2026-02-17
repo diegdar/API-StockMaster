@@ -9,12 +9,11 @@ use App\Models\Supplier;
 use App\Models\Warehouse;
 use App\Models\Inventory;
 use App\Repositories\ProductRepository;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+
 use Tests\TestCase;
 
 class ProductRepositoryTest extends TestCase
 {
-    use RefreshDatabase;
 
     private ProductRepository $repository;
 

@@ -10,14 +10,12 @@ use App\Models\Category;
 use App\Models\Product;
 use App\Models\Supplier;
 use App\Services\CategoryService;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+
 use Tests\TestCase;
 use App\Repositories\CategoryRepository;
 
 class CategoryServiceTest extends TestCase
 {
-    use RefreshDatabase;
-
     private CategoryService $service;
 
     protected function setUp(): void

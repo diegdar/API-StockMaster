@@ -5,13 +5,11 @@ namespace Tests\Unit\Resources;
 
 use App\Http\Resources\WarehouseResource;
 use App\Models\Warehouse;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+
 use Tests\TestCase;
 
 class WarehouseResourceTest extends TestCase
 {
-    use RefreshDatabase;
-
     /**
      * Test WarehouseResource returns correct structure.
      */

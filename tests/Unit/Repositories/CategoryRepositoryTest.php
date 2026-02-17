@@ -7,12 +7,11 @@ use App\Models\Category;
 use App\Models\Product;
 use App\Models\Supplier;
 use App\Repositories\CategoryRepository;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+
 use Tests\TestCase;
 
 class CategoryRepositoryTest extends TestCase
 {
-    use RefreshDatabase;
 
     private CategoryRepository $repository;
 
