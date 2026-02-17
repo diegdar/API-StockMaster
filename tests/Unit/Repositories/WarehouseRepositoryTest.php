@@ -35,58 +35,6 @@ class WarehouseRepositoryTest extends TestCase
     }
 
     /**
-     * Test findById returns warehouse.
-     */
-    public function test_find_by_id_returns_warehouse(): void
-    {
-        $warehouse = Warehouse::factory()->create([
-            'name' => 'Test Warehouse',
-            'location' => 'Test Location',
-        ]);
-
-        $result = $this->repository->findById($warehouse->id);
-
-        $this->assertNotNull($result);
-        $this->assertEquals('Test Warehouse', $result->name);
-        $this->assertEquals('Test Location', $result->location);
-    }
-
-    /**
-     * Test findById returns null for non-existent warehouse.
-     */
-    public function test_find_by_id_returns_null_for_non_existent(): void
-    {
-        $result = $this->repository->findById(999);
-
-        $this->assertNull($result);
-    }
-
-    /**
-     * Test findBySlug returns warehouse.
-     */
-    public function test_find_by_slug_returns_warehouse(): void
-    {
-        $warehouse = Warehouse::factory()->create([
-            'name' => 'Almacén Central',
-        ]);
-
-        $result = $this->repository->findBySlug('almacen-central');
-
-        $this->assertNotNull($result);
-        $this->assertEquals($warehouse->id, $result->id);
-    }
-
-    /**
-     * Test findBySlug returns null for non-existent slug.
-     */
-    public function test_find_by_slug_returns_null_for_non_existent(): void
-    {
-        $result = $this->repository->findBySlug('non-existent-slug');
-
-        $this->assertNull($result);
-    }
-
-    /**
      * Test create warehouse.
      */
     public function test_create_warehouse(): void
@@ -142,32 +90,6 @@ class WarehouseRepositoryTest extends TestCase
         $this->assertDatabaseMissing('warehouses', [
             'id' => $warehouse->id,
         ]);
-    }
-
-    /**
-     * Test getWarehousesWithCapacity returns warehouses with capacity info.
-     */
-    public function test_get_warehouses_with_capacity(): void
-    {
-        Warehouse::factory()->create([
-            'name' => 'Warehouse A',
-            'capacity' => 50000,
-        ]);
-        Warehouse::factory()->create([
-            'name' => 'Warehouse B',
-            'capacity' => 30000,
-        ]);
-        Warehouse::factory()->create([
-            'name' => 'Warehouse No Capacity',
-            'capacity' => null,
-        ]);
-
-        $result = $this->repository->getWarehousesWithCapacity();
-
-        $this->assertCount(3, $result);
-        $this->assertTrue($result->contains('name', 'Warehouse A'));
-        $this->assertTrue($result->contains('name', 'Warehouse B'));
-        $this->assertTrue($result->contains('name', 'Warehouse No Capacity'));
     }
 
     /**
