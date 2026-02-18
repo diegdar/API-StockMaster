@@ -5,13 +5,13 @@ namespace Tests\Unit\Repositories;
 
 use App\Models\Category;
 use App\Models\Product;
-use App\Models\Supplier;
 use App\Repositories\CategoryRepository;
-
 use Tests\TestCase;
+use Tests\Unit\Repositories\Traits\RepositoryTestTrait;
 
 class CategoryRepositoryTest extends TestCase
 {
+    use RepositoryTestTrait;
 
     private CategoryRepository $repository;
 
@@ -23,7 +23,7 @@ class CategoryRepositoryTest extends TestCase
 
     public function test_get_all_returns_paginated_categories(): void
     {
-        Category::factory()->count(20)->create();
+        $this->createCategories(20);
 
         $result = $this->repository->getAll(5);
 
@@ -70,12 +70,11 @@ class CategoryRepositoryTest extends TestCase
 
     public function test_get_categories_with_product_count(): void
     {
-        $category = Category::factory()->create();
-        $supplier = Supplier::factory()->create();
+        $entities = $this->createCategoryAndSupplier();
 
         Product::factory()->count(5)->create([
-            'category_id' => $category->id,
-            'supplier_id' => $supplier->id,
+            'category_id' => $entities->category->id,
+            'supplier_id' => $entities->supplier->id,
         ]);
 
         $result = $this->repository->getCategoriesWithProductCount();

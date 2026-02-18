@@ -4,16 +4,13 @@ declare(strict_types=1);
 namespace Tests\Unit\Repositories;
 
 use App\Models\Product;
-use App\Models\Category;
-use App\Models\Supplier;
-use App\Models\Warehouse;
-use App\Models\Inventory;
 use App\Repositories\ProductRepository;
-
 use Tests\TestCase;
+use Tests\Unit\Repositories\Traits\RepositoryTestTrait;
 
 class ProductRepositoryTest extends TestCase
 {
+    use RepositoryTestTrait;
 
     private ProductRepository $repository;
 
@@ -25,12 +22,11 @@ class ProductRepositoryTest extends TestCase
 
     public function test_get_all_returns_paginated_products(): void
     {
-        $category = Category::factory()->create();
-        $supplier = Supplier::factory()->create();
+        $entities = $this->createCategoryAndSupplier();
 
         Product::factory()->count(20)->create([
-            'category_id' => $category->id,
-            'supplier_id' => $supplier->id,
+            'category_id' => $entities->category->id,
+            'supplier_id' => $entities->supplier->id,
         ]);
 
         $result = $this->repository->getAll(5);
@@ -41,13 +37,7 @@ class ProductRepositoryTest extends TestCase
 
     public function test_find_by_id_returns_product_with_relations(): void
     {
-        $category = Category::factory()->create();
-        $supplier = Supplier::factory()->create();
-
-        $product = Product::factory()->create([
-            'category_id' => $category->id,
-            'supplier_id' => $supplier->id,
-        ]);
+        $product = $this->createProduct();
 
         $result = $this->repository->findById($product->id);
 
@@ -64,14 +54,7 @@ class ProductRepositoryTest extends TestCase
 
     public function test_find_by_sku_returns_product(): void
     {
-        $category = Category::factory()->create();
-        $supplier = Supplier::factory()->create();
-
-        $product = Product::factory()->create([
-            'sku' => 'UNIQUE-SKU-123',
-            'category_id' => $category->id,
-            'supplier_id' => $supplier->id,
-        ]);
+        $product = $this->createProduct(['sku' => 'UNIQUE-SKU-123']);
 
         $result = $this->repository->findBySku('UNIQUE-SKU-123');
 
@@ -88,8 +71,7 @@ class ProductRepositoryTest extends TestCase
 
     public function test_create_product(): void
     {
-        $category = Category::factory()->create();
-        $supplier = Supplier::factory()->create();
+        $entities = $this->createCategoryAndSupplier();
 
         $data = [
             'name' => 'New Product',
@@ -97,8 +79,8 @@ class ProductRepositoryTest extends TestCase
             'description' => 'New description',
             'unit_price' => 100.00,
             'unit_cost' => 50.00,
-            'category_id' => $category->id,
-            'supplier_id' => $supplier->id,
+            'category_id' => $entities->category->id,
+            'supplier_id' => $entities->supplier->id,
             'valuation_strategy' => 'fifo',
             'min_stock_level' => 10,
         ];
@@ -112,13 +94,7 @@ class ProductRepositoryTest extends TestCase
 
     public function test_update_product(): void
     {
-        $category = Category::factory()->create();
-        $supplier = Supplier::factory()->create();
-
-        $product = Product::factory()->create([
-            'category_id' => $category->id,
-            'supplier_id' => $supplier->id,
-        ]);
+        $product = $this->createProduct();
 
         $data = [
             'name' => 'Updated Name',
@@ -133,13 +109,7 @@ class ProductRepositoryTest extends TestCase
 
     public function test_delete_product(): void
     {
-        $category = Category::factory()->create();
-        $supplier = Supplier::factory()->create();
-
-        $product = Product::factory()->create([
-            'category_id' => $category->id,
-            'supplier_id' => $supplier->id,
-        ]);
+        $product = $this->createProduct();
 
         $result = $this->repository->delete($product);
 
@@ -149,19 +119,12 @@ class ProductRepositoryTest extends TestCase
 
     public function test_get_products_by_supplier(): void
     {
-        $category = Category::factory()->create();
-        $supplier1 = Supplier::factory()->create();
-        $supplier2 = Supplier::factory()->create();
+        $suppliers = $this->createSuppliers(2);
+        $supplier1 = $suppliers->first();
+        $supplier2 = $suppliers->last();
 
-        Product::factory()->count(3)->create([
-            'category_id' => $category->id,
-            'supplier_id' => $supplier1->id,
-        ]);
-
-        Product::factory()->count(2)->create([
-            'category_id' => $category->id,
-            'supplier_id' => $supplier2->id,
-        ]);
+        $this->createProductsForSupplier($supplier1->id, 3);
+        $this->createProductsForSupplier($supplier2->id, 2);
 
         $result = $this->repository->getProductsBySupplier($supplier1->id);
 
@@ -170,19 +133,12 @@ class ProductRepositoryTest extends TestCase
 
     public function test_get_products_by_category(): void
     {
-        $category1 = Category::factory()->create();
-        $category2 = Category::factory()->create();
-        $supplier = Supplier::factory()->create();
+        $categories = $this->createCategories(2);
+        $category1 = $categories->first();
+        $category2 = $categories->last();
 
-        Product::factory()->count(3)->create([
-            'category_id' => $category1->id,
-            'supplier_id' => $supplier->id,
-        ]);
-
-        Product::factory()->count(2)->create([
-            'category_id' => $category2->id,
-            'supplier_id' => $supplier->id,
-        ]);
+        $this->createProductsForCategory($category1->id, 3);
+        $this->createProductsForCategory($category2->id, 2);
 
         $result = $this->repository->getProductsByCategory($category1->id);
 
@@ -191,37 +147,17 @@ class ProductRepositoryTest extends TestCase
 
     public function test_get_products_by_warehouse(): void
     {
-        $category = Category::factory()->create();
-        $supplier = Supplier::factory()->create();
-        $warehouse1 = Warehouse::factory()->create();
-        $warehouse2 = Warehouse::factory()->create();
+        $warehouses = $this->createWarehouses(2);
+        $warehouse1 = $warehouses->first();
+        $warehouse2 = $warehouses->last();
 
-        $product1 = Product::factory()->create([
-            'category_id' => $category->id,
-            'supplier_id' => $supplier->id,
-        ]);
-
-        $product2 = Product::factory()->create([
-            'category_id' => $category->id,
-            'supplier_id' => $supplier->id,
-        ]);
-
-        Inventory::factory()->create([
-            'product_id' => $product1->id,
-            'warehouse_id' => $warehouse1->id,
-            'quantity' => 100,
-        ]);
-
-        Inventory::factory()->create([
-            'product_id' => $product2->id,
-            'warehouse_id' => $warehouse2->id,
-            'quantity' => 50,
-        ]);
+        $result1 = $this->createProductWithInventory($warehouse1->id, 100);
+        $this->createProductWithInventory($warehouse2->id, 50);
 
         $result = $this->repository->getProductsByWarehouse($warehouse1->id);
 
         $this->assertCount(1, $result);
-        $this->assertEquals($product1->id, $result->first()->id);
+        $this->assertEquals($result1->product->id, $result->first()->id);
     }
 
     public static function productDataProvider(): array
@@ -238,8 +174,7 @@ class ProductRepositoryTest extends TestCase
      */
     public function test_create_with_different_valuation_strategies(string $strategy): void
     {
-        $category = Category::factory()->create();
-        $supplier = Supplier::factory()->create();
+        $entities = $this->createCategoryAndSupplier();
 
         $data = [
             'name' => "Product with $strategy",
@@ -247,8 +182,8 @@ class ProductRepositoryTest extends TestCase
             'description' => 'Test',
             'unit_price' => 100.00,
             'unit_cost' => 50.00,
-            'category_id' => $category->id,
-            'supplier_id' => $supplier->id,
+            'category_id' => $entities->category->id,
+            'supplier_id' => $entities->supplier->id,
             'valuation_strategy' => $strategy,
             'min_stock_level' => 5,
         ];
