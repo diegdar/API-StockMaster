@@ -93,6 +93,41 @@ trait WarehouseTestTrait
     }
 
     /**
+     * Setup transfer test with destination warehouse capacity.
+     *
+     * @param int $sourceQuantity
+     * @param int|null $destinationCapacity
+     * @return object{user: User, sourceWarehouse: Warehouse, destinationWarehouse: Warehouse, product: Product}
+     */
+    protected function setupTransferWithCapacity(
+        int $sourceQuantity,
+        ?int $destinationCapacity
+    ): object {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $sourceWarehouse = Warehouse::factory()->create(['name' => 'Source Warehouse']);
+        $destinationWarehouse = Warehouse::factory()->create([
+            'name' => 'Destination Warehouse',
+            'capacity' => $destinationCapacity,
+        ]);
+        $product = Product::factory()->create();
+
+        Inventory::factory()->create([
+            'product_id' => $product->id,
+            'warehouse_id' => $sourceWarehouse->id,
+            'quantity' => $sourceQuantity,
+        ]);
+
+        return (object) [
+            'user' => $user,
+            'sourceWarehouse' => $sourceWarehouse,
+            'destinationWarehouse' => $destinationWarehouse,
+            'product' => $product,
+        ];
+    }
+
+    /**
      * Assert transfer response structure and values.
      *
      * @param array<string, mixed> $result
