@@ -5,13 +5,12 @@ namespace Tests\Unit\Repositories;
 
 use App\Models\Warehouse;
 use App\Repositories\Contracts\WarehouseRepositoryInterface;
-
 use Tests\TestCase;
-use App\Models\Product;
-use App\Models\Inventory;
+use Tests\Unit\Repositories\Traits\RepositoryTestTrait;
 
 class WarehouseRepositoryTest extends TestCase
 {
+    use RepositoryTestTrait;
 
     private WarehouseRepositoryInterface $repository;
 
@@ -21,12 +20,9 @@ class WarehouseRepositoryTest extends TestCase
         $this->repository = app(WarehouseRepositoryInterface::class);
     }
 
-    /**
-     * Test getAll returns paginated warehouses.
-     */
     public function test_get_all_returns_paginated_warehouses(): void
     {
-        Warehouse::factory()->count(20)->create();
+        $this->createWarehouses(20);
 
         $result = $this->repository->getAll(15);
 
@@ -34,9 +30,6 @@ class WarehouseRepositoryTest extends TestCase
         $this->assertEquals(20, $result->total());
     }
 
-    /**
-     * Test create warehouse.
-     */
     public function test_create_warehouse(): void
     {
         $data = [
@@ -56,9 +49,6 @@ class WarehouseRepositoryTest extends TestCase
         $this->assertEquals('new-warehouse', $result->slug);
     }
 
-    /**
-     * Test update warehouse.
-     */
     public function test_update_warehouse(): void
     {
         $warehouse = Warehouse::factory()->create([
@@ -78,9 +68,6 @@ class WarehouseRepositoryTest extends TestCase
         $this->assertEquals('updated-name', $result->slug);
     }
 
-    /**
-     * Test delete warehouse.
-     */
     public function test_delete_warehouse(): void
     {
         $warehouse = Warehouse::factory()->create();
@@ -92,31 +79,15 @@ class WarehouseRepositoryTest extends TestCase
         ]);
     }
 
-    /**
-     * Test getWarehousesWithInventoryCount returns warehouses with inventory count.
-     */
     public function test_get_warehouses_with_inventory_count(): void
     {
-        $warehouse1 = Warehouse::factory()->create();
-        $warehouse2 = Warehouse::factory()->create();
+        $warehouses = $this->createWarehouses(2);
+        $warehouse1 = $warehouses->first();
+        $warehouse2 = $warehouses->last();
 
-        // Create products and inventories for testing
-        $product1 = Product::factory()->create();
-        $product2 = Product::factory()->create();
-        $product3 = Product::factory()->create();
-
-        Inventory::factory()->create([
-            'warehouse_id' => $warehouse1->id,
-            'product_id' => $product1->id,
-        ]);
-        Inventory::factory()->create([
-            'warehouse_id' => $warehouse1->id,
-            'product_id' => $product2->id,
-        ]);
-        Inventory::factory()->create([
-            'warehouse_id' => $warehouse2->id,
-            'product_id' => $product3->id,
-        ]);
+        $result1 = $this->createProductWithInventory($warehouse1->id);
+        $this->createProductWithInventory($warehouse1->id);
+        $this->createProductWithInventory($warehouse2->id);
 
         $result = $this->repository->getWarehousesWithInventoryCount();
 
@@ -125,5 +96,52 @@ class WarehouseRepositoryTest extends TestCase
         $wh2 = $result->firstWhere('id', $warehouse2->id);
         $this->assertEquals(2, $wh1->inventories_count);
         $this->assertEquals(1, $wh2->inventories_count);
+    }
+
+    public function test_find_by_id_returns_warehouse(): void
+    {
+        $warehouse = Warehouse::factory()->create([
+            'name' => 'Test Warehouse',
+            'location' => 'Test Location',
+        ]);
+
+        $result = $this->repository->findById($warehouse->id);
+
+        $this->assertNotNull($result);
+        $this->assertEquals($warehouse->id, $result->id);
+        $this->assertEquals('Test Warehouse', $result->name);
+    }
+
+    public function test_find_by_id_returns_null_when_not_found(): void
+    {
+        $result = $this->repository->findById(99999);
+
+        $this->assertNull($result);
+    }
+
+    public function test_get_available_capacity(): void
+    {
+        $warehouse = Warehouse::factory()->create(['capacity' => 1000]);
+        $result = $this->createProductWithInventory($warehouse->id, 300);
+
+        $availableCapacity = $this->repository->getAvailableCapacity($warehouse->id);
+
+        $this->assertEquals(700, $availableCapacity);
+    }
+
+    public function test_get_available_capacity_returns_null_when_no_capacity_limit(): void
+    {
+        $warehouse = Warehouse::factory()->create(['capacity' => null]);
+
+        $result = $this->repository->getAvailableCapacity($warehouse->id);
+
+        $this->assertNull($result);
+    }
+
+    public function test_get_available_capacity_returns_null_when_warehouse_not_found(): void
+    {
+        $result = $this->repository->getAvailableCapacity(99999);
+
+        $this->assertNull($result);
     }
 }
