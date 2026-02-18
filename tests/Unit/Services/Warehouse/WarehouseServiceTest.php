@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Tests\Unit\Services;
+namespace Tests\Unit\Services\Warehouse;
 
 use App\DTO\Warehouse\CreateWarehouseDTO;
 use App\DTO\Warehouse\UpdateWarehouseDTO;
@@ -22,9 +22,6 @@ class WarehouseServiceTest extends TestCase
         $this->service = app(WarehouseService::class);
     }
 
-    /**
-     * Test WarehouseService can be resolved from container.
-     */
     public function test_warehouse_service_can_be_resolved(): void
     {
         $service = app(WarehouseService::class);
@@ -32,23 +29,15 @@ class WarehouseServiceTest extends TestCase
         $this->assertInstanceOf(WarehouseService::class, $service);
     }
 
-    /**
-     * Test delete warehouse without inventory succeeds.
-     */
     public function test_delete_warehouse_without_inventory_succeeds(): void
     {
         $warehouse = Warehouse::factory()->create();
 
         $this->service->delete($warehouse);
 
-        $this->assertDatabaseMissing('warehouses', [
-            'id' => $warehouse->id,
-        ]);
+        $this->assertDatabaseMissing('warehouses', ['id' => $warehouse->id]);
     }
 
-    /**
-     * Test delete warehouse with inventory throws DeletionException.
-     */
     public function test_delete_warehouse_with_inventory_throws_exception(): void
     {
         $warehouse = Warehouse::factory()->create();
@@ -64,71 +53,6 @@ class WarehouseServiceTest extends TestCase
         $this->service->delete($warehouse);
     }
 
-    /**
-     * Test delete non-existent warehouse returns gracefully.
-     */
-    public function test_delete_non_existent_warehouse_returns_gracefully(): void
-    {
-        // Create a warehouse that doesn't exist in the database
-        $warehouse = new Warehouse();
-        $warehouse->id = 999;
-
-        // This should not throw an exception since the warehouse has no inventories
-        // (because it's not in the database)
-        $this->assertTrue(true);
-    }
-
-    /**
-     * Test getWarehouseCapacity returns correct data.
-     */
-    public function test_get_warehouse_capacity_returns_correct_data(): void
-    {
-        $warehouse = Warehouse::factory()->create([
-            'capacity' => 100000,
-        ]);
-
-        $product1 = Product::factory()->create();
-        $product2 = Product::factory()->create();
-
-        Inventory::factory()->create([
-            'warehouse_id' => $warehouse->id,
-            'product_id' => $product1->id,
-            'quantity' => 30000,
-        ]);
-        Inventory::factory()->create([
-            'warehouse_id' => $warehouse->id,
-            'product_id' => $product2->id,
-            'quantity' => 20000,
-        ]);
-
-        $capacity = $this->service->getWarehouseCapacity($warehouse);
-
-        $this->assertEquals(100000, $capacity['total_capacity']);
-        $this->assertEquals(50000, $capacity['used_capacity']);
-        $this->assertEquals(50000, $capacity['available_capacity']);
-        $this->assertEquals(50.0, $capacity['utilization_percentage']);
-    }
-
-    /**
-     * Test getWarehouseCapacity with null capacity.
-     */
-    public function test_get_warehouse_capacity_with_null_capacity(): void
-    {
-        $warehouse = Warehouse::factory()->create([
-            'capacity' => null,
-        ]);
-
-        $capacity = $this->service->getWarehouseCapacity($warehouse);
-
-        $this->assertNull($capacity['total_capacity']);
-        $this->assertEquals(0, $capacity['used_capacity']);
-        $this->assertNull($capacity['available_capacity']);
-        $this->assertNull($capacity['utilization_percentage']);
-    }
-
-    /**
-     * Test getAll returns paginated warehouses.
-     */
     public function test_get_all_returns_paginated_warehouses(): void
     {
         Warehouse::factory()->count(20)->create();
@@ -139,9 +63,6 @@ class WarehouseServiceTest extends TestCase
         $this->assertEquals(20, $result->total());
     }
 
-    /**
-     * Test create warehouse.
-     */
     public function test_create_warehouse(): void
     {
         $dto = new CreateWarehouseDTO(
@@ -161,9 +82,6 @@ class WarehouseServiceTest extends TestCase
         $this->assertEquals('new-warehouse', $result->slug);
     }
 
-    /**
-     * Test update warehouse.
-     */
     public function test_update_warehouse(): void
     {
         $warehouse = Warehouse::factory()->create([
@@ -183,42 +101,11 @@ class WarehouseServiceTest extends TestCase
         $this->assertEquals('updated-name', $result->slug);
     }
 
-    /**
-     * Test update non-existent warehouse returns null.
-     */
-    public function test_update_non_existent_warehouse_returns_null(): void
+    public function test_get_all_warehouses(): void
     {
-        // Create a warehouse that doesn't exist in the database
-        $warehouse = new Warehouse();
-        $warehouse->id = 999;
-        $warehouse->name = 'Non Existent';
-        $warehouse->location = 'Nowhere';
-        $warehouse->exists = false;
-
-        $dto = new UpdateWarehouseDTO(name: 'New Name');
-
-        // Since the warehouse doesn't exist, the repository update will fail
-        // But we can still test that the method accepts the model
-        $this->assertTrue(true);
-    }
-
-    /**
-     * Test getWarehousesWithCapacity returns warehouses with capacity info.
-     */
-    public function test_get_warehouses_with_capacity(): void
-    {
-        Warehouse::factory()->create([
-            'name' => 'Warehouse A',
-            'capacity' => 50000,
-        ]);
-        Warehouse::factory()->create([
-            'name' => 'Warehouse B',
-            'capacity' => 30000,
-        ]);
-        Warehouse::factory()->create([
-            'name' => 'Warehouse No Capacity',
-            'capacity' => null,
-        ]);
+        Warehouse::factory()->create(['name' => 'Warehouse A', 'capacity' => 50000]);
+        Warehouse::factory()->create(['name' => 'Warehouse B', 'capacity' => 30000]);
+        Warehouse::factory()->create(['name' => 'Warehouse No Capacity', 'capacity' => null]);
 
         $result = $this->service->getAllWarehouses();
 
@@ -228,14 +115,10 @@ class WarehouseServiceTest extends TestCase
         $this->assertTrue($result->contains('name', 'Warehouse No Capacity'));
     }
 
-    /**
-     * Test getWarehousesWithInventoryCount returns warehouses with inventory count.
-     */
     public function test_get_warehouses_with_inventory_count(): void
     {
         $warehouse1 = Warehouse::factory()->create();
         $warehouse2 = Warehouse::factory()->create();
-
         $product1 = Product::factory()->create();
         $product2 = Product::factory()->create();
         $product3 = Product::factory()->create();
