@@ -38,4 +38,20 @@ interface WarehouseRepositoryInterface
      * Get all warehouses with inventory count.
      */
     public function getWarehousesWithInventoryCount(): Collection;
+
+    /**
+     * Find a warehouse by ID with its capacity information.
+     *
+     * @param int $id
+     * @return Warehouse|null
+     */
+    public function findById(int $id): ?Warehouse;
+
+    /**
+     * Get available capacity for a warehouse.
+     *
+     * @param int $warehouseId
+     * @return int|null Returns null if warehouse has no capacity limit
+     */
+    public function getAvailableCapacity(int $warehouseId): ?int;
 }
