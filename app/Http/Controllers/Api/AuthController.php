@@ -10,6 +10,7 @@ use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Spatie\Permission\Models\Role;
 
 class AuthController extends Controller
 {
@@ -27,9 +28,11 @@ class AuthController extends Controller
                 'password' => bcrypt($validated['password']),
             ]);
 
-            // Assign default role (User) if roles are configured
-            if (method_exists($user, 'assignRole')) {
-                $user->assignRole('Viewer');
+            // Assign default role (Viewer) for api guard
+            $role = Role::where('name', 'Viewer')
+                ->where('guard_name', 'api')->first();
+            if ($role) {
+                $user->assignRole($role);
             }
 
             return $user;

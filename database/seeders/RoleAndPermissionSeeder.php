@@ -26,22 +26,9 @@ class RoleAndPermissionSeeder extends Seeder
 
         $this->enableForeignKeyChecking();
 
-        // Create Permissions
-        Permission::create(['name' => 'manage products']);
-        Permission::create(['name' => 'manage warehouses']);
-        Permission::create(['name' => 'record movements']);
-        Permission::create(['name' => 'view inventory']);
-
-        // Create Admin Role and give all permissions
-        $admin = Role::create(['name' => 'Admin']);
-        $admin->givePermissionTo(Permission::all());
-
-        // Create Worker Role
-        $worker = Role::create(['name' => 'Worker']);
-        $worker->givePermissionTo(['record movements', 'view inventory']);
-
-        // Create Viewer Role
-        $viewer = Role::create(['name' => 'Viewer']);
-        $viewer->givePermissionTo(['view inventory']);
+        // // Create Permissions (for API guard)
+        Role::create(['name' => 'Admin', 'guard_name' => 'api']);
+        Role::create(['name' => 'Worker', 'guard_name' => 'api']);
+        Role::create(['name' => 'Viewer', 'guard_name' => 'api']);
     }
 }

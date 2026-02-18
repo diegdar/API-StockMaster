@@ -4,23 +4,24 @@ declare(strict_types=1);
 namespace Tests\Feature\Api;
 
 use App\Models\Product;
-use App\Models\User;
 use App\Models\Category;
 use App\Models\Supplier;
 use App\Models\Warehouse;
 use App\Models\Inventory;
 use App\Models\StockMovement;
 use App\Models\RestockAlert;
-use Database\Seeders\RoleAndPermissionSeeder;
 use Laravel\Passport\Passport;
+use Tests\Feature\Api\Traits\ApiTestUsersTrait;
 use Tests\TestCase;
 
 class ProductApiTest extends TestCase
 {
+    use ApiTestUsersTrait;
+
     protected function setUp(): void
     {
         parent::setUp();
-        $this->seed(RoleAndPermissionSeeder::class);
+        $this->setupApiUsers();
     }
 
     /**
@@ -29,8 +30,7 @@ class ProductApiTest extends TestCase
      */
     public function test_it_verifies_product_endpoint_permissions(string $role, string $method, string $routeName, int $expectedStatus)
     {
-        $user = User::factory()->create();
-        $user->assignRole($role);
+        $user = $this->getUserByRole($role);
         Passport::actingAs($user);
 
         $product = Product::factory()->create();
@@ -61,21 +61,16 @@ class ProductApiTest extends TestCase
     public static function productPermissionsProvider(): array
     {
         return [
-            // Admin: Full Access
             'Admin can list products' => ['Admin', 'GET', 'products.index', 200],
             'Admin can show product' => ['Admin', 'GET', 'products.show', 200],
             'Admin can create product' => ['Admin', 'POST', 'products.store', 201],
             'Admin can update product' => ['Admin', 'PUT', 'products.update', 200],
             'Admin can delete product' => ['Admin', 'DELETE', 'products.destroy', 200],
-
-            // Worker: Read-only Access (for catalog)
             'Worker can list products' => ['Worker', 'GET', 'products.index', 200],
             'Worker can show product' => ['Worker', 'GET', 'products.show', 200],
             'Worker cannot create product' => ['Worker', 'POST', 'products.store', 403],
             'Worker cannot update product' => ['Worker', 'PUT', 'products.update', 403],
             'Worker cannot delete product' => ['Worker', 'DELETE', 'products.destroy', 403],
-
-            // Viewer: Read-only Access
             'Viewer can list products' => ['Viewer', 'GET', 'products.index', 200],
             'Viewer can show product' => ['Viewer', 'GET', 'products.show', 200],
             'Viewer cannot create product' => ['Viewer', 'POST', 'products.store', 403],
@@ -86,9 +81,7 @@ class ProductApiTest extends TestCase
 
     public function test_admin_sees_all_fields_including_sensitive_data()
     {
-        $admin = User::factory()->create();
-        $admin->assignRole('Admin');
-        Passport::actingAs($admin);
+        Passport::actingAs($this->admin);
 
         $product = Product::factory()->create([
             'unit_price' => 100.00,
@@ -123,9 +116,7 @@ class ProductApiTest extends TestCase
 
     public function test_worker_sees_operational_fields_but_not_sensitive_financial_data()
     {
-        $worker = User::factory()->create();
-        $worker->assignRole('Worker');
-        Passport::actingAs($worker);
+        Passport::actingAs($this->worker);
 
         $product = Product::factory()->create([
             'unit_price' => 100.00,
@@ -160,9 +151,7 @@ class ProductApiTest extends TestCase
 
     public function test_viewer_sees_only_public_fields()
     {
-        $viewer = User::factory()->create();
-        $viewer->assignRole('Viewer');
-        Passport::actingAs($viewer);
+        Passport::actingAs($this->viewer);
 
         $product = Product::factory()->create([
             'unit_price' => 100.00,
@@ -192,9 +181,7 @@ class ProductApiTest extends TestCase
 
     public function test_admin_can_delete_product_without_relations()
     {
-        $admin = User::factory()->create();
-        $admin->assignRole('Admin');
-        Passport::actingAs($admin);
+        Passport::actingAs($this->admin);
 
         $product = Product::factory()->create();
 
@@ -210,9 +197,7 @@ class ProductApiTest extends TestCase
 
     public function test_admin_cannot_delete_product_with_inventory()
     {
-        $admin = User::factory()->create();
-        $admin->assignRole('Admin');
-        Passport::actingAs($admin);
+        Passport::actingAs($this->admin);
 
         $warehouse = Warehouse::factory()->create();
         $product = Product::factory()->create();
@@ -234,21 +219,18 @@ class ProductApiTest extends TestCase
 
     public function test_admin_cannot_delete_product_with_stock_movements()
     {
-        $admin = User::factory()->create();
-        $admin->assignRole('Admin');
-        Passport::actingAs($admin);
+        Passport::actingAs($this->admin);
 
         $warehouse = Warehouse::factory()->create();
         $product = Product::factory()->create();
         StockMovement::factory()->create([
             'product_id' => $product->id,
             'warehouse_id' => $warehouse->id,
-            'user_id' => $admin->id,
+            'user_id' => $this->admin->id,
             'type' => 'in',
             'quantity' => 50,
         ]);
 
-        // StockMovementObserver creates Inventory, so inventory check fails first
         $response = $this->deleteJson(route('products.destroy', $product->id));
 
         $response->assertStatus(422)
@@ -261,9 +243,7 @@ class ProductApiTest extends TestCase
 
     public function test_admin_cannot_delete_product_with_active_alerts()
     {
-        $admin = User::factory()->create();
-        $admin->assignRole('Admin');
-        Passport::actingAs($admin);
+        Passport::actingAs($this->admin);
 
         $warehouse = Warehouse::factory()->create();
         $product = Product::factory()->create();
