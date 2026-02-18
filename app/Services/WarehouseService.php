@@ -131,77 +131,160 @@ class WarehouseService
         $destinationWarehouse = Warehouse::findOrFail($dto->destinationWarehouseId);
         $product = Product::findOrFail($dto->productId);
 
-        // Validate sufficient stock in source warehouse
-        $currentStock = Inventory::where('product_id', $dto->productId)
-            ->where('warehouse_id', $dto->sourceWarehouseId)
-            ->value('quantity') ?? 0;
+        $this->validateSufficientStock($dto->productId, $dto->sourceWarehouseId, $dto->quantity);
 
-        if ($currentStock < $dto->quantity) {
-            throw new InsufficientStockException($currentStock, $dto->quantity);
-        }
+        $descriptions = $this->buildMovementDescriptions(
+            $sourceWarehouse->name,
+            $destinationWarehouse->name,
+            $dto->description
+        );
 
-        // Build description
-        $baseDescription = $dto->description ?? '';
-        $outDescription = "Transfer to {$destinationWarehouse->name}" . ($baseDescription ? ": {$baseDescription}" : '');
-        $inDescription = "Transfer from {$sourceWarehouse->name}" . ($baseDescription ? ": {$baseDescription}" : '');
-
-        // Execute transfer within transaction
-        return DB::transaction(function () use ($dto, $product, $sourceWarehouse, $destinationWarehouse, $outDescription, $inDescription): array {
-            $userId = auth()->id();
-
-            // Create OUT movement
-            $outMovement = $this->movementRepository->createOutMovement(
-                $dto->productId,
-                $dto->sourceWarehouseId,
-                $dto->quantity,
-                $outDescription,
-                $userId
-            );
-
-            // Create IN movement
-            $inMovement = $this->movementRepository->createInMovement(
-                $dto->productId,
-                $dto->destinationWarehouseId,
-                $dto->quantity,
-                $inDescription,
-                $userId
-            );
-
-            return [
-                'product' => [
-                    'id' => $product->id,
-                    'name' => $product->name,
-                    'sku' => $product->sku,
-                ],
-                'source_warehouse' => [
-                    'id' => $sourceWarehouse->id,
-                    'name' => $sourceWarehouse->name,
-                    'slug' => $sourceWarehouse->slug,
-                ],
-                'destination_warehouse' => [
-                    'id' => $destinationWarehouse->id,
-                    'name' => $destinationWarehouse->name,
-                    'slug' => $destinationWarehouse->slug,
-                ],
-                'quantity' => $dto->quantity,
-                'movements' => [
-                    'out' => [
-                        'id' => $outMovement->id,
-                        'type' => $outMovement->type,
-                        'quantity' => $outMovement->quantity,
-                        'description' => $outMovement->description,
-                        'created_at' => $outMovement->created_at->toISOString(),
-                    ],
-                    'in' => [
-                        'id' => $inMovement->id,
-                        'type' => $inMovement->type,
-                        'quantity' => $inMovement->quantity,
-                        'description' => $inMovement->description,
-                        'created_at' => $inMovement->created_at->toISOString(),
-                    ],
-                ],
-            ];
-        });
+        return DB::transaction(fn() => $this->executeTransfer(
+            $dto,
+            $product,
+            $sourceWarehouse,
+            $destinationWarehouse,
+            $descriptions
+        ));
     }
 
+    /**
+     * Validate that there is sufficient stock for the transfer.
+     *
+     * @param int $productId
+     * @param int $warehouseId
+     * @param int $quantity
+     * @throws InsufficientStockException
+     */
+    private function validateSufficientStock(int $productId, int $warehouseId, int $quantity): void
+    {
+        $currentStock = Inventory::where('product_id', $productId)
+            ->where('warehouse_id', $warehouseId)
+            ->value('quantity') ?? 0;
+
+        if ($currentStock < $quantity) {
+            throw new InsufficientStockException($currentStock, $quantity);
+        }
+    }
+
+    /**
+     * Build movement descriptions for OUT and IN movements.
+     *
+     * @param string $sourceWarehouseName
+     * @param string $destinationWarehouseName
+     * @param string|null $baseDescription
+     * @return array{out: string, in: string}
+     */
+    private function buildMovementDescriptions(
+        string $sourceWarehouseName,
+        string $destinationWarehouseName,
+        ?string $baseDescription
+    ): array {
+        $suffix = $baseDescription ? ": {$baseDescription}" : '';
+
+        return [
+            'out' => "Transfer to {$destinationWarehouseName}{$suffix}",
+            'in' => "Transfer from {$sourceWarehouseName}{$suffix}",
+        ];
+    }
+
+    /**
+     * Execute the transfer within a transaction.
+     *
+     * @param TransferStockDTO $dto
+     * @param Product $product
+     * @param Warehouse $sourceWarehouse
+     * @param Warehouse $destinationWarehouse
+     * @param array{out: string, in: string} $descriptions
+     * @return array<string, mixed>
+     */
+    private function executeTransfer(
+        TransferStockDTO $dto,
+        Product $product,
+        Warehouse $sourceWarehouse,
+        Warehouse $destinationWarehouse,
+        array $descriptions
+    ): array {
+        $userId = auth()->id();
+
+        $outMovement = $this->movementRepository->createOutMovement(
+            $dto->productId,
+            $dto->sourceWarehouseId,
+            $dto->quantity,
+            $descriptions['out'],
+            $userId
+        );
+
+        $inMovement = $this->movementRepository->createInMovement(
+            $dto->productId,
+            $dto->destinationWarehouseId,
+            $dto->quantity,
+            $descriptions['in'],
+            $userId
+        );
+
+        return $this->buildTransferResponse(
+            $product,
+            $sourceWarehouse,
+            $destinationWarehouse,
+            $dto->quantity,
+            $outMovement,
+            $inMovement
+        );
+    }
+
+    /**
+     * Build the transfer response array.
+     *
+     * @param Product $product
+     * @param Warehouse $sourceWarehouse
+     * @param Warehouse $destinationWarehouse
+     * @param int $quantity
+     * @param mixed $outMovement
+     * @param mixed $inMovement
+     * @return array<string, mixed>
+     */
+    private function buildTransferResponse(
+        Product $product,
+        Warehouse $sourceWarehouse,
+        Warehouse $destinationWarehouse,
+        int $quantity,
+        mixed $outMovement,
+        mixed $inMovement
+    ): array {
+        return [
+            'product' => [
+                'id' => $product->id,
+                'name' => $product->name,
+                'sku' => $product->sku,
+            ],
+            'source_warehouse' => [
+                'id' => $sourceWarehouse->id,
+                'name' => $sourceWarehouse->name,
+                'slug' => $sourceWarehouse->slug,
+            ],
+            'destination_warehouse' => [
+                'id' => $destinationWarehouse->id,
+                'name' => $destinationWarehouse->name,
+                'slug' => $destinationWarehouse->slug,
+            ],
+            'quantity' => $quantity,
+            'movements' => [
+                'out' => [
+                    'id' => $outMovement->id,
+                    'type' => $outMovement->type,
+                    'quantity' => $outMovement->quantity,
+                    'description' => $outMovement->description,
+                    'created_at' => $outMovement->created_at->toISOString(),
+                ],
+                'in' => [
+                    'id' => $inMovement->id,
+                    'type' => $inMovement->type,
+                    'quantity' => $inMovement->quantity,
+                    'description' => $inMovement->description,
+                    'created_at' => $inMovement->created_at->toISOString(),
+                ],
+            ],
+        ];
+    }
 }
