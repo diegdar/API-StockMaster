@@ -12,7 +12,17 @@
             "type": "string"
         },
         {
-            "key": "accessToken",
+            "key": "adminAccessToken",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "workerAccessToken",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "viewerAccessToken",
             "value": "",
             "type": "string"
         },
@@ -25,6 +35,11 @@
             "key": "categoryId",
             "value": "1",
             "type": "string"
+        },
+        {
+            "key": "warehouseId",
+            "value": "1",
+            "type": "string"
         }
     ],
     "auth": {
@@ -32,17 +47,86 @@
         "bearer": [
             {
                 "key": "token",
-                "value": "{{accessToken}}",
+                "value": "{{adminAccessToken}}",
                 "type": "string"
             }
         ]
     },
+    "event": [
+        {
+            "listen": "prerequest",
+            "script": {
+                "exec": [
+                    "// Auto-login script for collection-level authentication",
+                    "// Executes before each request if token is empty",
+                    "",
+                    "const baseUrl = pm.collectionVariables.get('baseUrl');",
+                    "const token = pm.collectionVariables.get('adminAccessToken');",
+                    "",
+                    "// Skip login for authentication endpoints",
+                    "const currentUrl = pm.request.url.toString();",
+                    "const isAuthEndpoint = currentUrl.includes('/auth/login') || ",
+                    "                       currentUrl.includes('/auth/register');",
+                    "",
+                    "// Function to perform login",
+                    "async function performLogin() {",
+                    "    return new Promise((resolve, reject) => {",
+                    "        pm.sendRequest({",
+                    "            url: `${baseUrl}/auth/login`,",
+                    "            method: 'POST',",
+                    "            header: {",
+                    "                'Content-Type': 'application/json',",
+                    "                'Accept': 'application/json'",
+                    "            },",
+                    "            body: {",
+                    "                mode: 'raw',",
+                    "                raw: JSON.stringify({",
+                    "                    email: 'admin@stockmaster.com',",
+                    "                    password: 'Password$1234'",
+                    "                })",
+                    "            }",
+                    "        }, (err, res) => {",
+                    "            if (err) {",
+                    "                console.error('Login request failed:', err);",
+                    "                reject(err);",
+                    "            } else {",
+                    "                try {",
+                    "                    const jsonData = res.json();",
+                    "                    if (jsonData.data && jsonData.data.access_token) {",
+                    "                        pm.collectionVariables.set('adminAccessToken', jsonData.data.access_token);",
+                    "                        console.log('Auto-login successful: Token saved to adminAccessToken');",
+                    "                        resolve(jsonData.data.access_token);",
+                    "                    } else {",
+                    "                        console.error('Login response missing access_token:', jsonData);",
+                    "                        reject(new Error('No access_token in response'));",
+                    "                    }",
+                    "                } catch (parseError) {",
+                    "                    console.error('Failed to parse login response:', parseError);",
+                    "                    reject(parseError);",
+                    "                }",
+                    "            }",
+                    "        });",
+                    "    });",
+                    "}",
+                    "",
+                    "// Check if we need to login",
+                    "if (!token && !isAuthEndpoint) {",
+                    "    console.log('No adminAccessToken found. Performing auto-login...');",
+                    "    performLogin().catch(err => {",
+                    "        console.error('Auto-login failed:', err);",
+                    "    });",
+                    "}"
+                ],
+                "type": "text/javascript"
+            }
+        }
+    ],
     "item": [
         {
             "name": "Authentication",
             "item": [
                 {
-                    "name": "Login User",
+                    "name": "Login AdminUser",
                     "event": [
                         {
                             "listen": "test",
@@ -51,7 +135,7 @@
                                     "if (pm.response.code === 200) {",
                                     "    var jsonData = pm.response.json();",
                                     "    if (jsonData.data && jsonData.data.access_token) {",
-                                    "        pm.collectionVariables.set('accessToken', jsonData.data.access_token);",
+                                    "        pm.collectionVariables.set('adminAccessToken', jsonData.data.access_token);",
                                     "    }",
                                     "}"
                                 ],
@@ -122,16 +206,16 @@
                     ]
                 },
                 {
-                    "name": "Register User",
+                    "name": "Login WorkerUser",
                     "event": [
                         {
                             "listen": "test",
                             "script": {
                                 "exec": [
-                                    "if (pm.response.code === 201) {",
+                                    "if (pm.response.code === 200) {",
                                     "    var jsonData = pm.response.json();",
                                     "    if (jsonData.data && jsonData.data.access_token) {",
-                                    "        pm.collectionVariables.set('accessToken', jsonData.data.access_token);",
+                                    "        pm.collectionVariables.set('workerAccessToken', jsonData.data.access_token);",
                                     "    }",
                                     "}"
                                 ],
@@ -153,7 +237,125 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n    \"name\": \"Test User\",\n    \"email\": \"admin@stockmaster.com\",\n    \"password\": \"Password$1234\",\n    \"password_confirmation\": \"Password$1234\"\n}",
+                            "raw": "{\n    \"email\": \"worker@stockmaster.com\",\n    \"password\": \"Password$1234\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/login",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "login"
+                            ]
+                        },
+                        "description": "Login as Worker user. Has permissions for 'record movements' and 'view inventory'."
+                    },
+                    "response": [
+                        {
+                            "name": "Login Worker Success",
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\"message\": \"Login successful\", \"data\": {\"user\": {\"id\": 2, \"name\": \"Worker User\", \"email\": \"worker@stockmaster.com\"}, \"access_token\": \"...\", \"token_type\": \"Bearer\"}}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Login ViewerUser",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 200) {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    if (jsonData.data && jsonData.data.access_token) {",
+                                    "        pm.collectionVariables.set('viewerAccessToken', jsonData.data.access_token);",
+                                    "    }",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"email\": \"viewer@stockmaster.com\",\n    \"password\": \"Password$1234\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/login",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "login"
+                            ]
+                        },
+                        "description": "Login as Viewer user. Has permission only for 'view inventory'."
+                    },
+                    "response": [
+                        {
+                            "name": "Login Viewer Success",
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\"message\": \"Login successful\", \"data\": {\"user\": {\"id\": 3, \"name\": \"Viewer User\", \"email\": \"viewer@stockmaster.com\"}, \"access_token\": \"...\", \"token_type\": \"Bearer\"}}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Register User",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"Test User\",\n    \"email\": \"newUser@stockmaster.com\",\n    \"password\": \"Password$1234\",\n    \"password_confirmation\": \"Password$1234\"\n}",
                             "options": {
                                 "raw": {
                                     "language": "json"
@@ -214,7 +416,7 @@
                             "bearer": [
                                 {
                                     "key": "token",
-                                    "value": "{{accessToken}}",
+                                    "value": "{{adminAccessToken}}",
                                     "type": "string"
                                 }
                             ]
@@ -282,7 +484,7 @@
                             "bearer": [
                                 {
                                     "key": "token",
-                                    "value": "{{accessToken}}",
+                                    "value": "{{adminAccessToken}}",
                                     "type": "string"
                                 }
                             ]
@@ -329,7 +531,7 @@
                             "bearer": [
                                 {
                                     "key": "token",
-                                    "value": "{{accessToken}}",
+                                    "value": "{{adminAccessToken}}",
                                     "type": "string"
                                 }
                             ]
@@ -389,7 +591,7 @@
                             "bearer": [
                                 {
                                     "key": "token",
-                                    "value": "{{accessToken}}",
+                                    "value": "{{adminAccessToken}}",
                                     "type": "string"
                                 }
                             ]
@@ -437,7 +639,7 @@
                             "bearer": [
                                 {
                                     "key": "token",
-                                    "value": "{{accessToken}}",
+                                    "value": "{{adminAccessToken}}",
                                     "type": "string"
                                 }
                             ]
@@ -498,7 +700,7 @@
                             "bearer": [
                                 {
                                     "key": "token",
-                                    "value": "{{accessToken}}",
+                                    "value": "{{adminAccessToken}}",
                                     "type": "string"
                                 }
                             ]
@@ -562,7 +764,7 @@
                             "bearer": [
                                 {
                                     "key": "token",
-                                    "value": "{{accessToken}}",
+                                    "value": "{{adminAccessToken}}",
                                     "type": "string"
                                 }
                             ]
@@ -609,7 +811,7 @@
                             "bearer": [
                                 {
                                     "key": "token",
-                                    "value": "{{accessToken}}",
+                                    "value": "{{adminAccessToken}}",
                                     "type": "string"
                                 }
                             ]
@@ -669,7 +871,7 @@
                             "bearer": [
                                 {
                                     "key": "token",
-                                    "value": "{{accessToken}}",
+                                    "value": "{{adminAccessToken}}",
                                     "type": "string"
                                 }
                             ]
@@ -717,7 +919,7 @@
                             "bearer": [
                                 {
                                     "key": "token",
-                                    "value": "{{accessToken}}",
+                                    "value": "{{adminAccessToken}}",
                                     "type": "string"
                                 }
                             ]
@@ -778,7 +980,7 @@
                             "bearer": [
                                 {
                                     "key": "token",
-                                    "value": "{{accessToken}}",
+                                    "value": "{{adminAccessToken}}",
                                     "type": "string"
                                 }
                             ]
@@ -823,6 +1025,598 @@
                                 }
                             ],
                             "body": "{\"message\":\"Cannot delete category because it has associated products. Please remove or reassign the products first.\",\"errors\":{\"category\":[\"This category has 4 associated product(s).\"]}}"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Warehouses",
+            "item": [
+                {
+                    "name": "List Warehouses",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 200) {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    if (jsonData.data && jsonData.data.length > 0) {",
+                                    "        pm.collectionVariables.set('warehouseId', jsonData.data[0].id);",
+                                    "    }",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{adminAccessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/warehouses",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "warehouses"
+                            ]
+                        },
+                        "description": "Retrieve a list of all warehouses. Requires authentication (all roles)."
+                    },
+                    "response": [
+                        {
+                            "name": "Warehouses List Success",
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\"data\":[{\"id\":1,\"name\":\"Main Warehouse\",\"slug\":\"main-warehouse\",\"location\":\"New York, USA\",\"capacity\":10000,\"created_at\":\"2026-01-01T00:00:00.000000Z\",\"updated_at\":\"2026-01-01T00:00:00.000000Z\",\"inventories_count\":25}],\"links\":{\"first\":\"...?page=1\",\"last\":\"...?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"last_page\":1,\"per_page\":15,\"total\":3}}"
+                        }
+                    ]
+                },
+                {
+                    "name": "List Warehouses with Capacity",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{adminAccessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/warehouses/with-capacity",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "warehouses",
+                                "with-capacity"
+                            ]
+                        },
+                        "description": "Retrieve a list of all warehouses including their capacity metrics. Requires authentication (all roles)."
+                    },
+                    "response": [
+                        {
+                            "name": "Warehouses with Capacity Success",
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\"data\":[{\"id\":1,\"name\":\"Main Warehouse\",\"slug\":\"main-warehouse\",\"location\":\"New York, USA\",\"capacity\":10000,\"created_at\":\"2026-01-01T00:00:00.000000Z\",\"updated_at\":\"2026-01-01T00:00:00.000000Z\",\"inventories_count\":25,\"capacity_info\":{\"total_capacity\":10000,\"used_capacity\":7500,\"available_capacity\":2500,\"utilization_percentage\":75.0}}]}"
+                        }
+                    ]
+                },
+                {
+                    "name": "List Warehouses with Inventory Count",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{adminAccessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/warehouses/with-inventory-count",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "warehouses",
+                                "with-inventory-count"
+                            ]
+                        },
+                        "description": "Retrieve a list of all warehouses including their inventory count. Requires authentication (all roles)."
+                    },
+                    "response": [
+                        {
+                            "name": "Warehouses with Inventory Count Success",
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\"data\":[{\"id\":1,\"name\":\"Main Warehouse\",\"slug\":\"main-warehouse\",\"location\":\"New York, USA\",\"capacity\":10000,\"created_at\":\"2026-01-01T00:00:00.000000Z\",\"updated_at\":\"2026-01-01T00:00:00.000000Z\",\"inventories_count\":25}]}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Create Warehouse",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{adminAccessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"Distribution Center West\",\n    \"location\": \"Los Angeles, USA\",\n    \"capacity\": 15000\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/warehouses",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "warehouses"
+                            ]
+                        },
+                        "description": "Create a new warehouse. Requires Admin role. Slug is auto-generated from name."
+                    },
+                    "response": [
+                        {
+                            "name": "Warehouse Created",
+                            "status": "Created",
+                            "code": 201,
+                            "_postman_previewlanguage": "json",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\"message\":\"The Warehouse 'Distribution Center West' has been created successfully\",\"data\":{\"id\":4,\"name\":\"Distribution Center West\",\"slug\":\"distribution-center-west\",\"location\":\"Los Angeles, USA\",\"capacity\":15000,\"created_at\":\"2026-02-15T12:00:00.000000Z\",\"updated_at\":\"2026-02-15T12:00:00.000000Z\",\"inventories_count\":0}}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Show Warehouse",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{adminAccessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/warehouses/{{warehouseId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "warehouses",
+                                "{{warehouseId}}"
+                            ]
+                        },
+                        "description": "Retrieve a specific warehouse by ID. Requires authentication (all roles)."
+                    },
+                    "response": [
+                        {
+                            "name": "Warehouse Show Success",
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\"data\":{\"id\":1,\"name\":\"Main Warehouse\",\"slug\":\"main-warehouse\",\"location\":\"New York, USA\",\"capacity\":10000,\"created_at\":\"2026-01-01T00:00:00.000000Z\",\"updated_at\":\"2026-01-01T00:00:00.000000Z\",\"inventories_count\":25}}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Show Warehouse by Slug",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{adminAccessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/warehouses/slug/almacen-central-madrid",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "warehouses",
+                                "slug",
+                                "almacen-central-madrid"
+                            ]
+                        },
+                        "description": "Retrieve a specific warehouse by its slug. Requires authentication (all roles)."
+                    },
+                    "response": [
+                        {
+                            "name": "Warehouse by Slug Success",
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\"data\":{\"id\":1,\"name\":\"Main Warehouse\",\"slug\":\"main-warehouse\",\"location\":\"New York, USA\",\"capacity\":10000,\"created_at\":\"2026-01-01T00:00:00.000000Z\",\"updated_at\":\"2026-01-01T00:00:00.000000Z\",\"inventories_count\":25}}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Get Warehouse Capacity",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{adminAccessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/warehouses/{{warehouseId}}/capacity",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "warehouses",
+                                "{{warehouseId}}",
+                                "capacity"
+                            ]
+                        },
+                        "description": "Get capacity information for a specific warehouse including utilization percentage. Requires authentication (all roles)."
+                    },
+                    "response": [
+                        {
+                            "name": "Warehouse Capacity Success",
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\"name\":\"Main Warehouse\",\"location\":\"New York, USA\",\"total_capacity\":10000,\"used_capacity\":7500,\"available_capacity\":2500,\"utilization_percentage\":75.0}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Update Warehouse",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{adminAccessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"Main Warehouse Updated\",\n    \"location\": \"New York City, USA\",\n    \"capacity\": 12000\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/warehouses/{{warehouseId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "warehouses",
+                                "{{warehouseId}}"
+                            ]
+                        },
+                        "description": "Update a warehouse. Requires Admin role. Slug is auto-regenerated if name changes."
+                    },
+                    "response": [
+                        {
+                            "name": "Warehouse Updated",
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\"message\":\"The Warehouse 'Main Warehouse Updated' has been updated successfully\",\"data\":{\"id\":1,\"name\":\"Main Warehouse Updated\",\"slug\":\"main-warehouse-updated\",\"location\":\"New York City, USA\",\"capacity\":12000,\"created_at\":\"2026-01-01T00:00:00.000000Z\",\"updated_at\":\"2026-02-15T12:00:00.000000Z\",\"inventories_count\":25}}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Delete Warehouse",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{adminAccessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/warehouses/3",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "warehouses",
+                                "3"
+                            ]
+                        },
+                        "description": "Delete a warehouse. Requires Admin role. Returns 200 with success message."
+                    },
+                    "response": [
+                        {
+                            "name": "Warehouse Deleted",
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\"message\":\"The Warehouse has been deleted successfully\"}"
+                        },
+                        {
+                            "name": "Cannot Delete - Has Inventories",
+                            "status": "Unprocessable Entity",
+                            "code": 422,
+                            "_postman_previewlanguage": "json",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\"message\":\"Cannot delete warehouse because it has associated inventories. Please remove or transfer the inventory first.\",\"errors\":{\"warehouse\":[\"This warehouse has 25 associated inventory record(s).\"]}}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Transfer Stock Between Warehouses",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{adminAccessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"product_id\": 1,\n    \"source_warehouse_id\": 1,\n    \"destination_warehouse_id\": 2,\n    \"quantity\": 30,\n    \"description\": \"Routine stock transfer\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/warehouses/transfer",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "warehouses",
+                                "transfer"
+                            ]
+                        },
+                        "description": "Transfer stock from one warehouse to another. Creates OUT movement in source warehouse and IN movement in destination warehouse. Requires Admin or Worker role."
+                    },
+                    "response": [
+                        {
+                            "name": "Transfer Success",
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\"message\":\"Stock transferred successfully\",\"data\":{\"product\":{\"id\":1,\"name\":\"Laptop Dell XPS 15\",\"sku\":\"LAP-DELL-XPS15\"},\"source_warehouse\":{\"id\":1,\"name\":\"Main Warehouse\",\"slug\":\"main-warehouse\"},\"destination_warehouse\":{\"id\":2,\"name\":\"Distribution Center\",\"slug\":\"distribution-center\"},\"quantity\":50,\"movements\":{\"out\":{\"id\":101,\"type\":\"out\",\"quantity\":50,\"description\":\"Transfer to Distribution Center: Routine stock transfer\",\"created_at\":\"2026-02-18T12:00:00.000Z\"},\"in\":{\"id\":102,\"type\":\"in\",\"quantity\":50,\"description\":\"Transfer from Main Warehouse: Routine stock transfer\",\"created_at\":\"2026-02-18T12:00:00.000Z\"}}}}"
+                        },
+                        {
+                            "name": "Insufficient Stock",
+                            "status": "Unprocessable Entity",
+                            "code": 422,
+                            "_postman_previewlanguage": "json",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\"message\":\"Insufficient stock in source warehouse\",\"errors\":{\"quantity\":[\"Available stock: 10, Requested: 50\"]}}"
+                        },
+                        {
+                            "name": "Source Warehouse Inactive",
+                            "status": "Unprocessable Entity",
+                            "code": 422,
+                            "_postman_previewlanguage": "json",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\"message\":\"The selected source warehouse is not active.\",\"errors\":{\"source_warehouse_id\":[\"The selected source warehouse is not active.\"]}}"
+                        },
+                        {
+                            "name": "Destination Warehouse Inactive",
+                            "status": "Unprocessable Entity",
+                            "code": 422,
+                            "_postman_previewlanguage": "json",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\"message\":\"The selected destination warehouse is not active.\",\"errors\":{\"destination_warehouse_id\":[\"The selected destination warehouse is not active.\"]}}"
                         }
                     ]
                 }
