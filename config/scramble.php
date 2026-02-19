@@ -24,12 +24,29 @@ return [
         /*
          * API version.
          */
-        'version' => env('API_VERSION', '0.0.1'),
+        'version' => env('API_VERSION', '1.0.0'),
 
         /*
          * Description rendered on the home page of the API documentation (`/docs/api`).
          */
-        'description' => '',
+        'description' => <<<'HTML'
+        <p>API RESTful para gestión avanzada de inventarios multialmacén. Incluye control de existencias, auditoría de movimientos, gestión de proveedores, transferencias entre almacenes y alertas automáticas de reposición.</p>
+
+        <h2>🔐 Autenticación</h2>
+        <ol>
+            <li>Usa el endpoint <code>POST /api/login</code> con tus credenciales para obtener el:<code>"access_token"</code></li>
+            <li>Copia el token y luego utilizalo en cualquier endpoint para poderte autenticar.</li>
+            <li>Pega el token copiado en En la casilla <strong>'Auth'</strong><code>Token :</code></li>
+            <li>luego haz clic en el boton<strong>"Send API Request"</strong> para enviar la solicitud.</li>
+        </ol>
+
+        <h3>📋 Credenciales de prueba (después de ejecutar seeders)</h3>
+        <ul>
+            <li><strong>Admin:</strong> email: admin@stockmaster.com / password: Password$1234</li>
+            <li><strong>Worker:</strong> email: worker@stockmaster.com / password: Password$1234</li>
+            <li><strong>Viewer:</strong> email: viewer@stockmaster.test / password: Password$1234</li>
+        </ul>
+        HTML,
     ],
 
     /*
@@ -39,12 +56,12 @@ return [
         /*
          * Define the title of the documentation's website. App name is used when this config is `null`.
          */
-        'title' => null,
+        'title' => 'StockMaster API Documentation',
 
         /*
          * Define the theme of the documentation. Available options are `light`, `dark`, and `system`.
          */
-        'theme' => 'light',
+        'theme' => 'dark',
 
         /*
          * Hide the `Try It` feature. Enabled by default.
@@ -76,20 +93,28 @@ return [
     ],
 
     /*
+     * Global security schemes. The key is the security scheme name that will be used in the OpenAPI spec.
+     * This enables the "Authorize" button in Stoplight Elements UI.
+     */
+    'security' => [
+        'sanctum' => [
+            'type' => 'http',
+            'scheme' => 'bearer',
+            'bearerFormat' => 'JWT',
+            'description' => 'Enter your Bearer token in the format: {token}',
+        ],
+    ],
+
+    /*
      * The list of servers of the API. By default, when `null`, server URL will be created from
      * `scramble.api_path` and `scramble.api_domain` config variables. When providing an array, you
      * will need to specify the local server URL manually (if needed).
      *
-     * Example of non-default config (final URLs are generated using Laravel `url` helper):
-     *
-     * ```php
-     * 'servers' => [
-     *     'Live' => 'api',
-     *     'Prod' => 'https://scramble.dedoc.co/api',
-     * ],
-     * ```
+     * The server is automatically selected based on the application environment.
      */
-    'servers' => null,
+    'servers' => env('APP_ENV', 'production') === 'local'
+        ? ['Local' => 'http://localhost:8000/api']
+        : ['Production' => 'https://stockmaster.diegochacondev.es/api'],
 
     /**
      * Determines how Scramble stores the descriptions of enum cases.

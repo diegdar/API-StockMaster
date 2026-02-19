@@ -55,7 +55,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Authenticate a user and return an access token.
+     * Authenticate an user.
      */
     public function login(LoginRequest $request): JsonResponse
     {

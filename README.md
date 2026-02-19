@@ -13,87 +13,284 @@
 | Componente | Tecnología |
 |------------|------------|
 | **Base de Datos** | MariaDB (Motor InnoDB) |
-| **Backend** | PHP con Tipado Estricto (Laravel) |
+| **Backend** | PHP 8.2+ con Tipado Estricto (Laravel 11) |
 | **Autenticación** | OAuth2 mediante Laravel Passport |
-| **Patrones de Diseño** | Repository Pattern / Service Pattern (SOLID) |
-| **Documentación** | Scramble (OpenAPI/Swagger) |
+| **Role-Based Access Control** | Spatie Laravel Permission |
+| **Patrones de Diseño** | Repository, Service, DTO, Observer, Strategy, Factory |
+| **Documentación** | Scramble (OpenAPI 3.0) |
+| **Testing** | PHPUnit (Unit y Feature Tests) |
+
+---
+
+## 🏗️ Arquitectura de Software
+
+### Flujo de Comunicación entre Capas
+
+```
+Controller → DTO → Service → Repository → MariaDB
+                ↓
+            Observer (eventos del modelo)
+```
+
+### Reglas de Comunicación (Strict Flow)
+
+| Capa | Responsabilidad | Regla de Oro |
+|------|-----------------|--------------|
+| **Controller** | Recibe Request, transforma a DTO | Nunca llama al Repository o Model directamente |
+| **Service** | Ejecuta lógica de negocio | Solo acepta DTOs o tipos primitivos |
+| **Repository** | Acceso a datos (Eloquent/Query Builder) | Único lugar con lógica de BD |
+| **Observer** | Reacciona a eventos del modelo | Automatización transparente |
+
+### Patrones de Diseño Implementados
+
+#### 1. Repository Pattern
+Abstracción del acceso a datos para centralizar queries complejas y desacoplar la lógica de negocio de Eloquent.
+
+```php
+// Ejemplo: ProductRepository
+interface ProductRepositoryInterface
+{
+    public function getAll(int $perPage): LengthAwarePaginator;
+    public function findById(int $id): ?Product;
+    public function getLowStockProducts(): Collection;
+}
+```
+
+#### 2. Service Pattern
+Encapsula la lógica de negocio y orquesta las operaciones entre Controller y Repository.
+
+```php
+// Ejemplo: WarehouseService
+class WarehouseService
+{
+    public function transferBetweenWarehouses(TransferStockDTO $dto): array
+    {
+        // Validación de stock, capacidad, y ejecución transaccional
+    }
+}
+```
+
+#### 3. DTO (Data Transfer Object)
+Estandarización de datos de entrada/salida entre capas, evitando exponer modelos directamente.
+
+```php
+// Ejemplo: TransferStockDTO
+readonly class TransferStockDTO
+{
+    public function __construct(
+        public int $productId,
+        public int $sourceWarehouseId,
+        public int $destinationWarehouseId,
+        public int $quantity,
+        public ?string $description = null
+    ) {}
+}
+```
+
+#### 4. Observer Pattern
+Automatización de tareas en respuesta a eventos del modelo (creating, created, updating, deleting).
+
+- [`CategoryObserver`](app/Observers/CategoryObserver.php) - Auto-generación de slugs
+- [`WarehouseObserver`](app/Observers/WarehouseObserver.php) - Auto-generación de slugs
+- [`StockMovementObserver`](app/Observers/StockMovementObserver.php) - Actualización automática de inventario
+
+#### 5. Strategy Pattern (Valoración de Inventario)
+Permite diferentes algoritmos de valoración de stock:
+
+| Estrategia | Descripción | Clase |
+|------------|-------------|-------|
+| **FIFO** | First In, First Out | [`FifoValuation`](app/Domain/Inventory/Strategies/FifoValuation.php) |
+| **LIFO** | Last In, First Out | [`LifoValuation`](app/Domain/Inventory/Strategies/LifoValuation.php) |
+| **Average** | Costo Promedio Ponderado | [`AvgValuation`](app/Domain/Inventory/Strategies/AvgValuation.php) |
+
+#### 6. Factory Pattern
+Creación de estrategias de valoración de forma desacoplada.
+
+```php
+// ValuationStrategyFactory
+class ValuationStrategyFactory
+{
+    public function make(string $strategy): InventoryValuationStrategy
+    {
+        return match ($strategy) {
+            'fifo' => new FifoValuation(),
+            'lifo' => new LifoValuation(),
+            'average' => new AvgValuation(),
+        };
+    }
+}
+```
+
+---
 
 ## 🗃️ Core de Base de Datos (MariaDB)
 
 El diseño se basa en la separación de tablas de catálogo y transacciones:
 
 ### Tablas Principales
-- [`products`](database/migrations/2026_02_11_190453_create_products_table.php) - SKU único y `min_stock_level`
-- [`warehouses`](database/migrations/2026_02_11_190452_create_warehouses_table.php) - Ubicaciones de almacén
-- [`categories`](database/migrations/2026_02_11_190450_create_categories_table.php) - Categorías de productos
-- [`suppliers`](database/migrations/2026_02_11_190451_create_suppliers_table.php) - Gestión de proveedores
 
-### Relaciones
-- **N:M:** [`inventories`](database/migrations/2026_02_11_190500_create_inventories_table.php) - Stock real por producto/almacén
-- **Auditoría:** [`stock_movements`](database/migrations/2026_02_11_190512_create_stock_movements_table.php) - Registro obligatorio de entrada/salida vinculado a `user_id` no nulo
+| Tabla | Descripción | Características |
+|-------|-------------|-----------------|
+| [`products`](database/migrations/2026_02_11_190453_create_products_table.php) | Catálogo de productos | SKU único, `min_stock_level`, `valuation_strategy` |
+| [`warehouses`](database/migrations/2026_02_11_190452_create_warehouses_table.php) | Almacenes | Slug único, `capacity`, `is_active` |
+| [`categories`](database/migrations/2026_02_11_190450_create_categories_table.php) | Categorías | Slug único auto-generado |
+| [`suppliers`](database/migrations/2026_02_11_190451_create_suppliers_table.php) | Proveedores | Datos de contacto |
+
+### Relaciones N:M
+
+| Tabla | Descripción |
+|-------|-------------|
+| [`inventories`](database/migrations/2026_02_11_190500_create_inventories_table.php) | Stock real por producto/almacén |
+| [`stock_movements`](database/migrations/2026_02_11_190512_create_stock_movements_table.php) | Auditoría de entradas/salidas (vinculado a `user_id`) |
 
 ### Automatización
-- **Patrón Observer:** [`StockMovementObserver`](app/Observers/StockMovementObserver.php) gestiona actualizaciones automáticas de inventario y alertas de reposición
-- **Vistas:** `vw_inventory_valuation` (valor total) y `vw_out_of_stock`
+
+- **Observer Pattern:** [`StockMovementObserver`](app/Observers/StockMovementObserver.php) gestiona actualizaciones automáticas de inventario
+- **Vistas de Base de Datos:**
+  - `vw_inventory_valuation` - Valor total del inventario
+  - `vw_out_of_stock` - Productos sin stock
+
+---
 
 ## 🔐 Autenticación y Seguridad
 
-- **OAuth2** mediante Laravel Passport
-- **RBAC** (Control de Acceso Basado en Roles) con middleware de protección
-- **Rate Limiting** habilitado en todas las rutas protegidas
-- **Rutas Nombradas** - Sin URLs hardcodeadas
-- **Validación de Password** - Regla StrongPassword: mínimo 8 caracteres, mayúscula y carácter especial
+### OAuth2 con Laravel Passport
+
+El sistema utiliza OAuth2 para autenticación, proporcionando tokens de acceso seguros.
+
+### RBAC (Control de Acceso Basado en Roles)
+
+La gestión de roles y permisos se implementa mediante **Spatie Laravel Permission**.
+
+| Rol | Permisos |
+|-----|----------|
+| **Admin** | Acceso total: CRUD productos, categorías, almacenes, transferencias |
+| **Worker** | Transferencias entre almacenes, consulta de inventario |
+| **Viewer** | Solo lectura de datos |
+
+### Rate Limiting
+
+| Endpoint | Límite |
+|----------|--------|
+| Login | 5 intentos/minuto |
+| API General | 60 requests/minuto |
+
+### Validación de Password
+
+Regla [`StrongPassword`](app/Rules/StrongPassword.php):
+- Mínimo **8 caracteres**
+- Al menos una **letra mayúscula**
+- Al menos un **carácter especial** (`!@#$%^&*(),.?":{}|<>`)
+
+---
 
 ## 📡 Endpoints de la API
 
 ### Autenticación (Público)
 
-| Método | Endpoint | Acción del Controlador | Descripción |
-|--------|----------|------------------------|-------------|
-| POST | `/api/auth/register` | [`AuthController@register`](app/Http/Controllers/Api/AuthController.php:26) | Registrar nuevo usuario |
-| POST | `/api/auth/login` | [`AuthController@login`](app/Http/Controllers/Api/AuthController.php:63) | Iniciar sesión |
-
-> **Nota:** El endpoint de login tiene rate limiting de 5 intentos por minuto.
+| Método | Endpoint | Descripción |
+|--------|----------|-------------|
+| POST | `/api/auth/register` | Registrar nuevo usuario |
+| POST | `/api/auth/login` | Iniciar sesión (rate limited) |
 
 ### Perfil de Usuario (Protegido)
 
-| Método | Endpoint | Acción del Controlador | Descripción |
-|--------|----------|------------------------|-------------|
-| GET | `/api/user` | Closure | Obtener perfil del usuario autenticado |
+| Método | Endpoint | Descripción |
+|--------|----------|-------------|
+| GET | `/api/user` | Obtener perfil del usuario autenticado |
 
 ### Productos (Protegido)
 
-| Método | Endpoint | Acción del Controlador | Descripción |
-|--------|----------|------------------------|-------------|
-| GET | `/api/products` | [`ProductController@index`](app/Http/Controllers/Api/ProductController.php:23) | Listar todos los productos |
-| POST | `/api/products` | [`ProductController@store`](app/Http/Controllers/Api/ProductController.php:31) | Crear nuevo producto |
-| GET | `/api/products/{id}` | [`ProductController@show`](app/Http/Controllers/Api/ProductController.php:44) | Mostrar producto individual |
-| PUT/PATCH | `/api/products/{id}` | [`ProductController@update`](app/Http/Controllers/Api/ProductController.php:52) | Actualizar producto |
-| DELETE | `/api/products/{id}` | [`ProductController@destroy`](app/Http/Controllers/Api/ProductController.php:65) | Eliminar producto |
+| Método | Endpoint | Descripción |
+|--------|----------|-------------|
+| GET | `/api/products` | Listar todos los productos (paginado) |
+| POST | `/api/products` | Crear nuevo producto |
+| GET | `/api/products/{id}` | Mostrar producto individual |
+| PUT/PATCH | `/api/products/{id}` | Actualizar producto |
+| DELETE | `/api/products/{id}` | Eliminar producto |
 
 ### Categorías (Protegido)
 
-| Método | Endpoint | Acción del Controlador | Descripción |
-|--------|----------|------------------------|-------------|
-| GET | `/api/categories` | [`CategoryController@index`](app/Http/Controllers/Api/CategoryController.php:29) | Listar todas las categorías |
-| POST | `/api/categories` | [`CategoryController@store`](app/Http/Controllers/Api/CategoryController.php:39) | Crear nueva categoría |
-| GET | `/api/categories/{id}` | [`CategoryController@show`](app/Http/Controllers/Api/CategoryController.php:54) | Mostrar categoría individual |
-| PUT/PATCH | `/api/categories/{id}` | [`CategoryController@update`](app/Http/Controllers/Api/CategoryController.php:64) | Actualizar categoría |
-| DELETE | `/api/categories/{id}` | [`CategoryController@destroy`](app/Http/Controllers/Api/CategoryController.php:77) | Eliminar categoría |
+| Método | Endpoint | Descripción |
+|--------|----------|-------------|
+| GET | `/api/categories` | Listar todas las categorías |
+| POST | `/api/categories` | Crear nueva categoría |
+| GET | `/api/categories/{id}` | Mostrar categoría individual |
+| PUT/PATCH | `/api/categories/{id}` | Actualizar categoría |
+| DELETE | `/api/categories/{id}` | Eliminar categoría |
 
-> **Nota:** No se puede eliminar una categoría que tenga productos asociados. Retorna 422 con mensaje de error indicando la cantidad de productos.
+> **Nota:** No se puede eliminar una categoría que tenga productos asociados (retorna 422).
+
+### Almacenes (Protegido)
+
+| Método | Endpoint | Descripción | Roles |
+|--------|----------|-------------|-------|
+| GET | `/api/warehouses` | Listar almacenes (paginado) | Todos |
+| POST | `/api/warehouses` | Crear almacén | Admin |
+| GET | `/api/warehouses/{id}` | Mostrar almacén por ID | Todos |
+| GET | `/api/warehouses/slug/{slug}` | Mostrar almacén por slug | Todos |
+| PUT/PATCH | `/api/warehouses/{id}` | Actualizar almacén | Admin |
+| DELETE | `/api/warehouses/{id}` | Eliminar almacén | Admin |
+| GET | `/api/warehouses/{id}/capacity` | Capacidad del almacén | Todos |
+| GET | `/api/warehouses/with-capacity` | Almacenes con métricas de capacidad | Todos |
+| GET | `/api/warehouses/with-inventory-count` | Almacenes con conteo de inventario | Todos |
+| POST | `/api/warehouses/transfer` | Transferir stock entre almacenes | Admin, Worker |
 
 ### Cabeceras de Petición
 
-Todos los endpoints protegidos requieren:
 ```
 Authorization: Bearer {access_token}
 Accept: application/json
 ```
 
+---
+
+## 🚀 Nuevas Features
+
+### Transferencia de Stock entre Almacenes
+
+El sistema permite transferir productos entre almacenes con validaciones completas:
+
+```json
+POST /api/warehouses/transfer
+{
+    "product_id": 1,
+    "source_warehouse_id": 1,
+    "destination_warehouse_id": 2,
+    "quantity": 50,
+    "description": "Reposición de stock"
+}
+```
+
+**Validaciones:**
+- Stock suficiente en almacén origen
+- Capacidad disponible en almacén destino
+- Almacenes activos
+- Transacción atómica (rollback automático en error)
+
+### Valoración de Inventario
+
+Cada producto puede tener una estrategia de valoración:
+
+```php
+// Calcular valor del inventario
+$valuationService->calculate($product); // Usa la estrategia configurada
+```
+
+### Excepciones Personalizadas
+
+| Excepción | Código | Uso |
+|-----------|--------|-----|
+| [`DeletionException`](app/Exceptions/DeletionException.php) | 422 | Entidad con dependencias |
+| [`InsufficientStockException`](app/Exceptions/InsufficientStockException.php) | 422 | Stock insuficiente para transferencia |
+| [`InsufficientCapacityException`](app/Exceptions/InsufficientCapacityException.php) | 422 | Capacidad de almacén excedida |
+
+---
+
 ## 📦 Instalación
 
 ### Requisitos Previos
+
 - PHP 8.2+
 - Composer
 - MariaDB 10.6+
@@ -104,7 +301,7 @@ Accept: application/json
 1. **Clonar el repositorio**
 ```bash
 git clone <repository-url>
-cd API StockMaster
+cd API-StockMaster
 ```
 
 2. **Instalar dependencias**
@@ -138,26 +335,16 @@ php artisan migrate
 php artisan passport:install --force
 ```
 
-### Requisitos de Password para Registro
+7. **Ejecutar seeders**
+```bash
+php artisan db:seed
+```
 
-El endpoint de registro requiere un password que cumpla con:
-- Mínimo **8 caracteres**
-- Al menos una **letra mayúscula**
-- Al menos un **carácter especial** (`!@#$%^&*(),.?":{}|<>`)
-
-**Ejemplo de password válido:** `Password123!`
-
-| Campo | Valor |
-|-------|-------|
-| Password | `Password123!` |
-
-> **Nota:** El [`UserFactory`](database/factories/UserFactory.php) y los tests usan passwords que cumplen estos requisitos.
+---
 
 ## 📦 Seeders de Base de Datos
 
 ### Estructura Modular
-
-El proyecto sigue un patrón de seeders modulares donde cada entidad tiene su propio Seeder:
 
 | Seeder | Entidad | Registros |
 |--------|---------|-----------|
@@ -167,11 +354,9 @@ El proyecto sigue un patrón de seeders modulares donde cada entidad tiene su pr
 | [`SupplierSeeder`](database/seeders/SupplierSeeder.php) | Proveedores | 3 proveedores |
 | [`WarehouseSeeder`](database/seeders/WarehouseSeeder.php) | Almacenes | 3 almacenes |
 | [`ProductSeeder`](database/seeders/ProductSeeder.php) | Productos | 20 productos |
-| [`StockMovementSeeder`](database/seeders/StockMovementSeeder.php) | Movimientos de Stock | ~100-200 movimientos |
+| [`StockMovementSeeder`](database/seeders/StockMovementSeeder.php) | Movimientos | ~100-200 movimientos |
 
 ### Orden de Ejecución
-
-El [`DatabaseSeeder`](database/seeders/DatabaseSeeder.php) orquesta la ejecución en el orden correcto:
 
 ```mermaid
 flowchart TD
@@ -185,32 +370,14 @@ flowchart TD
     note for G "Dispara StockMovementObserver<br/>para poblar Inventory"
 ```
 
-### Características de los Seeders
-
-- **Trait `DisablesForeignKeyChecking`**: Cada seeder usa el trait para permitir `truncate()` sin errores de foreign keys
-- **Datos Coherentes**: Los seeders obtienen registros existentes para crear relaciones válidas
-- **Factories Inteligentes**: Uso de `recycle()` y closures para mantener integridad referencial
-- **Observer Activo**: `StockMovementSeeder` dispara `StockMovementObserver` automáticamente
-
-### Ejecutar Seeders
-
-```bash
-# Ejecutar todos los seeders
-php artisan db:seed
-
-# Ejecutar un seeder específico
-php artisan db:seed --class=CategorySeeder
-
-# Refrescar y sembrar
-php artisan migrate:fresh --seed
-```
-
 ### Usuario de Prueba
 
 | Campo | Valor |
 |-------|-------|
 | Email | admin@stockmaster.com |
-| Password | password |
+| Password | Password$1234 |
+
+---
 
 ## 🧪 Pruebas
 
@@ -220,82 +387,117 @@ php artisan test
 
 # Ejecutar con cobertura
 php artisan test --coverage
+
+# Ejecutar prueba específica
+php artisan test --filter ProductTest
 ```
+
+---
 
 ## 📁 Estructura del Proyecto
 
 ```
-API StockMaster/
+API-StockMaster/
 ├── app/
-│   ├── DTO/                       # Data Transfer Objects
-│   │   ├── Product/               # Product DTOs (Create, Update)
-│   │   └── Category/              # Category DTOs (Create, Update)
+│   ├── DTO/                          # Data Transfer Objects
+│   │   ├── Category/                 # CreateCategoryDTO, UpdateCategoryDTO
+│   │   ├── Product/                  # CreateProductDTO, UpdateProductDTO
+│   │   └── Warehouse/                # CreateWarehouseDTO, UpdateWarehouseDTO, TransferStockDTO
 │   ├── Domain/
-│   │   └── Inventory/             # Capa de lógica de negocio
-│   │       ├── Contracts/         # Definiciones de interfaces
-│   │       ├── Factories/         # Implementaciones de patrón Factory
-│   │       ├── Services/          # Servicios de negocio
-│   │       └── Strategies/        # Estrategias de valoración
+│   │   └── Inventory/                # Capa de Dominio
+│   │       ├── Contracts/            # Interfaces (InventoryValuationStrategy)
+│   │       ├── Factories/            # ValuationStrategyFactory
+│   │       ├── Services/             # InventoryValuationService, StockService
+│   │       └── Strategies/           # FifoValuation, LifoValuation, AvgValuation
+│   ├── Exceptions/                   # Excepciones personalizadas
+│   │   ├── DeletionException.php
+│   │   ├── InsufficientCapacityException.php
+│   │   └── InsufficientStockException.php
 │   ├── Http/
-│   │   ├── Controllers/Api/       # Controladores de API
-│   │   ├── Requests/              # Validación FormRequest
-│   │   └── Resources/             # Transformadores de recursos API
-│   ├── Models/                    # Modelos Eloquent
-│   ├── Observers/                 # Observadores de modelos (StockMovementObserver)
-│   ├── Services/                  # Servicios de negocio
-│   │   └── CategoryService.php    # Servicio de categorías
-│   └── Repositories/              # Repository Pattern
-│       ├── Contracts/             # Interfaces de repositorio
-│       ├── ProductRepository.php # Implementación de repositorio
-│       └── CategoryRepository.php # Repositorio de categorías
+│   │   ├── Controllers/Api/          # Controladores de API
+│   │   ├── Requests/                 # FormRequest validation
+│   │   └── Resources/                # API Resources
+│   ├── Models/                       # Modelos Eloquent
+│   ├── Observers/                    # Observers (Category, Warehouse, StockMovement)
+│   ├── Repositories/                 # Repository Pattern
+│   │   ├── Contracts/                # Interfaces de repositorio
+│   │   ├── CategoryRepository.php
+│   │   ├── ProductRepository.php
+│   │   ├── StockMovementRepository.php
+│   │   └── WarehouseRepository.php
+│   ├── Rules/                        # Reglas de validación personalizadas
+│   │   ├── ActiveWarehouse.php
+│   │   └── StrongPassword.php
+│   └── Services/                     # Service Layer
+│       ├── CategoryService.php
+│       ├── ProductService.php
+│       ├── WarehouseService.php
+│       └── Traits/
+│           └── WarehouseTransferTrait.php
+├── config/
+│   └── scramble.php                  # Configuración de documentación API
 ├── database/
-│   ├── factories/                 # Factorías de modelos
-│   ├── migrations/                # Migraciones de base de datos
-│   └── seeders/                  # Seeders de base de datos
+│   ├── factories/                    # Model Factories
+│   ├── migrations/                   # Migraciones de BD
+│   └── seeders/                      # Seeders modulares
 ├── routes/
-│   └── api.php                    # Definición de rutas API
-└── tests/                        # Pruebas Feature y Unit
+│   └── api.php                       # Rutas API con nombres
+└── tests/                            # Feature y Unit Tests
 ```
+
+---
 
 ## 🔧 Servicios Clave
 
-### DTOs (Data Transfer Objects)
-Los DTOs encapsulan datos para transferirlos entre capas:
-- **Product DTOs:** `CreateProductDTO`, `UpdateProductDTO`
-- **Category DTOs:** `CreateCategoryDTO`, `UpdateCategoryDTO` (campos nullable para actualizaciones parciales)
+### WarehouseService
 
-### ProductRepository
-Abstrae el acceso a datos de productos, proporcionando métodos para consultas complejas:
-- `getAll()` - Listado paginado con relaciones
-- `findById()` / `findBySku()` - Búsqueda por ID o SKU
-- `getLowStockProducts()` - Productos bajo stock mínimo
-- `getProductsByWarehouse()` - Productos por almacén
-- `getProductsBySupplier()` - Productos por proveedor
-- `getProductsByCategory()` - Productos por categoría
+Gestiona la lógica de negocio de almacenes:
 
-### CategoryRepository
-Abstrae el acceso a datos de categorías:
-- `getAll()` - Listado paginado
-- `findById()` / `findBySlug()` - Búsqueda por ID o slug
-- `getCategoriesWithProductCount()` - Categorías con conteo de productos
-- `create()`, `update()`, `delete()` - Operaciones CRUD
+| Método | Descripción |
+|--------|-------------|
+| `getAll()` | Listado paginado |
+| `create()` | Crear almacén |
+| `update()` | Actualizar almacén |
+| `delete()` | Eliminar (valida inventario) |
+| `transferBetweenWarehouses()` | Transferencia con validaciones |
+| `getWarehouseCapacity()` | Métricas de capacidad |
+| `getWarehousesWithCapacity()` | Todos con métricas |
+
+### ProductService
+
+Gestiona productos con validación de dependencias:
+
+| Método | Descripción |
+|--------|-------------|
+| `getAll()` | Listado paginado |
+| `findById()` | Búsqueda por ID |
+| `create()` | Crear producto |
+| `update()` | Actualizar producto |
+| `delete()` | Eliminar (valida inventario, movimientos, alertas) |
 
 ### CategoryService
-Gestiona la lógica de negocio de categorías:
-- `getAllCategories()` - Listado paginado
-- `findCategoryById()` / `findCategoryBySlug()` - Búsqueda
-- `createCategory()` - Crear categoría (usa DTO)
-- `updateCategory()` - Actualizar categoría (usa DTO)
-- `deleteCategory()` - Eliminar categoría (lanza DeletionException si tiene productos)
 
-### StockService
-Gestiona movimientos de stock (ENTRADA/SALIDA) con actualizaciones automáticas de inventario.
+Gestiona categorías con auto-generación de slugs:
+
+| Método | Descripción |
+|--------|-------------|
+| `getAllCategories()` | Listado paginado |
+| `findCategoryById()` | Búsqueda por ID |
+| `findCategoryBySlug()` | Búsqueda por slug |
+| `createCategory()` | Crear categoría |
+| `updateCategory()` | Actualizar categoría |
+| `deleteCategory()` | Eliminar (valida productos asociados) |
 
 ### InventoryValuationService
-Calcula el valor del inventario usando diferentes estrategias:
-- **FIFO** (First In, First Out - Primera Entrada, Primera Salida)
-- **LIFO** (Last In, First Out - Última Entrada, Primera Salida)
-- **Costo Promedio**
+
+Calcula el valor del inventario usando estrategias:
+
+```php
+$service = new InventoryValuationService(new FifoValuation());
+$value = $service->calculate($product);
+```
+
+---
 
 ## 📤 Postman Collection
 
@@ -309,34 +511,57 @@ Se incluye una colección de Postman lista para importar con todos los endpoints
 
 ### Variables de Entorno
 
-La colección incluye las siguientes variables:
-
 | Variable | Valor | Descripción |
 |----------|-------|-------------|
-| `baseUrl` | `http://localhost:8000/api` | URL base de la API |
-| `accessToken` | (se auto-configura) | Token de acceso OAuth2 |
-| `productId` | (se auto-configura) | ID del producto para pruebas |
+| `baseUrl` (Local) | `http://localhost:8000/api` | URL base de la API en desarrollo |
+| `baseUrl` (Producción) | `https://stockmaster.diegochacondev.es/api` | URL base de la API en producción |
+| `accessToken` | (auto-configurada) | Token OAuth2 |
+| `productId` | (auto-configurada) | ID del producto para pruebas |
 
-### Flujo de Prueba Recomendado
+---
 
-1. **Iniciar sesión** (o registrar): `POST /auth/login` → Obtiene `{accessToken}`
-2. **Listar productos**: `GET /products` → Obtiene el primer ID de producto
-3. **Probar endpoints**: Usa el ID obtenido para probar Show, Update y Delete
+## 📖 Documentación API (Scramble)
 
-## 📖 Documentación
+La documentación de la API se genera automáticamente usando **Scramble** (OpenAPI 3.0).
 
-La documentación de la API se genera automáticamente usando Scramble. Accede en:
+### Acceso a la Documentación
+
+| Entorno | URL |
+|---------|-----|
+| Local | `http://localhost:8000/docs/api` |
+| Producción | `https://stockmaster.diegochacondev.es/docs/api` |
+
+### Características
+
+- **Generación automática** desde código PHP
+- **Try It** habilitado para probar endpoints
+- **Tema oscuro** con layout responsive
+- **Exportación** a OpenAPI JSON en [`api.json`](api.json)
+
+### Configuración
+
+La configuración está en [`config/scramble.php`](config/scramble.php):
+
+```php
+'ui' => [
+    'title' => 'StockMaster API',
+    'theme' => 'light',
+    'hide_try_it' => false,
+    'layout' => 'responsive',
+],
 ```
-/api/docs
-```
+
+---
 
 ## 🤝 Contribuciones
 
 1. Haz fork del repositorio
-2. Crea una rama de característica
-3. Guarda tus cambios
-4. Envía la rama
+2. Crea una rama de característica (`git checkout -b feature/nueva-funcionalidad`)
+3. Guarda tus cambios (`git commit -m 'Agrega nueva funcionalidad'`)
+4. Envía la rama (`git push origin feature/nueva-funcionalidad`)
 5. Abre un Pull Request
+
+---
 
 ## 📄 Licencia
 

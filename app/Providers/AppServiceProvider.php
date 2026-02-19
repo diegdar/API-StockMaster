@@ -1,28 +1,41 @@
 <?php
-declare(strict_types=1);
 
 namespace App\Providers;
 
-use App\Repositories\Contracts\CategoryRepositoryInterface;
-use App\Repositories\Contracts\ProductRepositoryInterface;
-use App\Repositories\Contracts\StockMovementRepositoryInterface;
-use App\Repositories\Contracts\WarehouseRepositoryInterface;
-use App\Repositories\CategoryRepository;
-use App\Repositories\ProductRepository;
-use App\Repositories\StockMovementRepository;
-use App\Repositories\WarehouseRepository;
-use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Facades\Schema;
-use App\Models\StockMovement;
-use App\Models\Category;
-use App\Models\Warehouse;
-use App\Observers\StockMovementObserver;
-use App\Observers\CategoryObserver;
-use App\Observers\WarehouseObserver;
+use App\Models\{
+    Category,
+    StockMovement,
+    Warehouse
+};
+use App\Observers\{
+    CategoryObserver,
+    StockMovementObserver,
+    WarehouseObserver
+};
+use Dedoc\Scramble\{
+    Scramble,
+    Support\Generator\OpenApi,
+    Support\Generator\SecurityScheme,
 
-use Illuminate\Cache\RateLimiting\Limit;
-use Illuminate\Support\Facades\RateLimiter;
-use Illuminate\Http\Request;
+};
+use Illuminate\{
+    Cache\RateLimiting\Limit,
+    Http\Request,
+    Support\Facades\RateLimiter,
+    Support\Facades\Schema,
+    Support\ServiceProvider,
+    Support\Facades\Gate,
+};
+use App\Repositories\{
+    CategoryRepository,
+    ProductRepository,
+    StockMovementRepository,
+    WarehouseRepository,
+    Contracts\StockMovementRepositoryInterface,
+    Contracts\CategoryRepositoryInterface,
+    Contracts\ProductRepositoryInterface,
+    Contracts\WarehouseRepositoryInterface
+};
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -43,12 +56,29 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Schema::defaultStringLength(191);
+
+        // Observers
         StockMovement::observe(StockMovementObserver::class);
         Category::observe(CategoryObserver::class);
         Warehouse::observe(WarehouseObserver::class);
 
+        // Rate Limiter
         RateLimiter::for('api', function (Request $request) {
             return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
+        });
+
+        // enable Scramble authentication for production (public)
+        Gate::define('viewApiDocs', function ($user = null) {
+            return true;
+        });
+
+        // Add Bearer token security scheme to OpenAPI documentation
+        Scramble::extendOpenApi(function (OpenApi $openApi) {
+            $openApi->secure(
+                SecurityScheme::http('bearer')
+                    ->as('bearerAuth')
+                    ->setDescription('Enter your Bearer token to access protected endpoints')
+            );
         });
     }
 }

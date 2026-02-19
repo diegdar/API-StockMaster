@@ -110,20 +110,12 @@ class WarehouseController extends Controller implements HasMiddleware
     }
 
     /**
-     * Get capacity information for a specific warehouse.
-     *
-     * @param Warehouse $warehouse
-     * @return JsonResponse
-     * @return array<string, mixed> {
-     *     'name' => string,
-     *     'location' => string,
-     *     'total_capacity' => int,
-     *     'used_capacity' => int,
-     *     'available_capacity' => int,
-     *     'utilization_percentage' => float,
-     * }
-     */
-    public function Capacity(Warehouse $warehouse): JsonResponse
+    * Get the capacity metrics of a warehouse.
+    *
+    * @param Warehouse $warehouse
+    * @return JsonResponse
+    */
+    public function capacity(Warehouse $warehouse): JsonResponse
     {
         $capacity = $this->service->getWarehouseCapacity($warehouse);
 

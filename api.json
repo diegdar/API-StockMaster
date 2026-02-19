@@ -1,12 +1,19 @@
 {
     "openapi": "3.1.0",
     "info": {
-        "title": "StockMaster Pro",
-        "version": "0.0.1"
+        "title": "StockMaster API Documentation",
+        "version": "1.0.0",
+        "description": "<p>API RESTful para gesti\u00f3n avanzada de inventarios multialmac\u00e9n. Incluye control de existencias, auditor\u00eda de movimientos, gesti\u00f3n de proveedores, transferencias entre almacenes y alertas autom\u00e1ticas de reposici\u00f3n.</p>\n\n<h2>\ud83d\udd10 Autenticaci\u00f3n</h2>\n<ol>\n    <li>Usa el endpoint <code>POST /api/login</code> con tus credenciales para obtener un <code>access_token</code>. Copialo y luego utilizalo en cualquier endpoint para poderte autenticar.</li>\n    <li>Pega el token copiado en En la casilla <strong>'Auth > Token'</strong></li>\n    <li>Asegurate de estar en <strong>\"Production\"</strong>, luego haz clic en el boton<strong>\"Send API Request\"</strong> para enviar la solicitud.</li>\n</ol>\n\n<h3>\ud83d\udccb Credenciales de prueba (despu\u00e9s de ejecutar seeders)</h3>\n<ul>\n    <li><strong>Admin:</strong> email: admin@stockmaster.com / password: Password$1234</li>\n    <li><strong>Worker:</strong> email: worker@stockmaster.com / password: Password$1234</li>\n    <li><strong>Viewer:</strong> email: viewer@stockmaster.test / password: Password$1234</li>\n</ul>"
     },
     "servers": [
         {
-            "url": "http://localhost/api"
+            "url": "http://localhost:8000/api",
+            "description": "Local"
+        }
+    ],
+    "security": [
+        {
+            "bearerAuth": []
         }
     ],
     "paths": {
@@ -117,7 +124,7 @@
         "/auth/login": {
             "post": {
                 "operationId": "auth.login",
-                "summary": "Authenticate a user and return an access token",
+                "summary": "Authenticate an user",
                 "tags": [
                     "Auth"
                 ],
@@ -242,10 +249,236 @@
                 }
             }
         },
+        "/categories": {
+            "get": {
+                "operationId": "categories.index",
+                "tags": [
+                    "Category"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Array of `CategoryResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/CategoryResource"
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            },
+            "post": {
+                "operationId": "categories.store",
+                "tags": [
+                    "Category"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/StoreCategoryRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/CategoryResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "message",
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    }
+                }
+            }
+        },
+        "/categories/{category}": {
+            "get": {
+                "operationId": "categories.show",
+                "tags": [
+                    "Category"
+                ],
+                "parameters": [
+                    {
+                        "name": "category",
+                        "in": "path",
+                        "required": true,
+                        "description": "The category ID",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "`CategoryResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/CategoryResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            },
+            "put": {
+                "operationId": "categories.update",
+                "tags": [
+                    "Category"
+                ],
+                "parameters": [
+                    {
+                        "name": "category",
+                        "in": "path",
+                        "required": true,
+                        "description": "The category ID",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateCategoryRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "`CategoryResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/CategoryResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    }
+                }
+            },
+            "delete": {
+                "operationId": "categories.destroy",
+                "tags": [
+                    "Category"
+                ],
+                "parameters": [
+                    {
+                        "name": "category",
+                        "in": "path",
+                        "required": true,
+                        "description": "The category ID",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No content",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "enum": [
+                                                "The Category has been deleted successfully"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "message"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
         "/products": {
             "get": {
                 "operationId": "products.index",
-                "summary": "Display a listing of the resource",
                 "tags": [
                     "Product"
                 ],
@@ -396,7 +629,6 @@
             },
             "post": {
                 "operationId": "products.store",
-                "summary": "Store a newly created resource in storage",
                 "tags": [
                     "Product"
                 ],
@@ -411,19 +643,19 @@
                     }
                 },
                 "responses": {
-                    "200": {
-                        "description": "`ProductResource`",
+                    "201": {
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "type": "object",
                                     "properties": {
-                                        "data": {
-                                            "$ref": "#/components/schemas/ProductResource"
+                                        "message": {
+                                            "type": "string"
                                         }
                                     },
                                     "required": [
-                                        "data"
+                                        "message"
                                     ]
                                 }
                             }
@@ -441,7 +673,6 @@
         "/products/{product}": {
             "get": {
                 "operationId": "products.show",
-                "summary": "Display the specified resource",
                 "tags": [
                     "Product"
                 ],
@@ -485,7 +716,6 @@
             },
             "put": {
                 "operationId": "products.update",
-                "summary": "Update the specified resource in storage",
                 "tags": [
                     "Product"
                 ],
@@ -528,20 +758,19 @@
                             }
                         }
                     },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    },
                     "404": {
                         "$ref": "#/components/responses/ModelNotFoundException"
                     },
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
-                    },
-                    "422": {
-                        "$ref": "#/components/responses/ValidationException"
                     }
                 }
             },
             "delete": {
                 "operationId": "products.destroy",
-                "summary": "Remove the specified resource from storage",
                 "tags": [
                     "Product"
                 ],
@@ -557,8 +786,503 @@
                     }
                 ],
                 "responses": {
-                    "204": {
-                        "description": "No content"
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "enum": [
+                                                "The Product has been deleted successfully"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "message"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/warehouses": {
+            "get": {
+                "operationId": "warehouses.index",
+                "summary": "Display a listing of warehouses",
+                "tags": [
+                    "Warehouse"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Array of `WarehouseResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/WarehouseResource"
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            },
+            "post": {
+                "operationId": "warehouses.store",
+                "summary": "Store a newly created warehouse",
+                "tags": [
+                    "Warehouse"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/StoreWarehouseRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/WarehouseResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "message",
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    }
+                }
+            }
+        },
+        "/warehouses/with-capacity": {
+            "get": {
+                "operationId": "warehouses.warehouses.with-capacity",
+                "summary": "Retrieve a list of all warehouses including their capacity metrics",
+                "tags": [
+                    "Warehouse"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Array of `WarehouseResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/WarehouseResource"
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/warehouses/with-inventory-count": {
+            "get": {
+                "operationId": "warehouses.warehouses.with-inventory-count",
+                "summary": "Get all warehouses including their capacity metrics and inventory count",
+                "tags": [
+                    "Warehouse"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Array of `WarehouseResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/WarehouseResource"
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/warehouses/slug/{warehouse}": {
+            "get": {
+                "operationId": "warehouses.warehouses.show-by-slug",
+                "summary": "Show a single warehouse by its slug",
+                "tags": [
+                    "Warehouse"
+                ],
+                "parameters": [
+                    {
+                        "name": "warehouse",
+                        "in": "path",
+                        "required": true,
+                        "description": "The warehouse slug",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/WarehouseResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/warehouses/{warehouse}/capacity": {
+            "get": {
+                "operationId": "warehouses.warehouses.capacity",
+                "summary": "Get the capacity metrics of a warehouse",
+                "tags": [
+                    "Warehouse"
+                ],
+                "parameters": [
+                    {
+                        "name": "warehouse",
+                        "in": "path",
+                        "required": true,
+                        "description": "The warehouse ID",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "location": {
+                                            "type": "string"
+                                        },
+                                        "total_capacity": {
+                                            "type": [
+                                                "integer",
+                                                "null"
+                                            ]
+                                        },
+                                        "used_capacity": {},
+                                        "available_capacity": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "utilization_percentage": {
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "name",
+                                        "location",
+                                        "total_capacity",
+                                        "used_capacity",
+                                        "available_capacity",
+                                        "utilization_percentage"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/warehouses/transfer": {
+            "post": {
+                "operationId": "warehouses.transfer",
+                "summary": "Transfer stock between warehouses",
+                "tags": [
+                    "Warehouse"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TransferStockRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "enum": [
+                                                "Transfer completed successfully"
+                                            ]
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "additionalProperties": {}
+                                        }
+                                    },
+                                    "required": [
+                                        "message",
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    }
+                }
+            }
+        },
+        "/warehouses/{warehouse}": {
+            "get": {
+                "operationId": "warehouses.show",
+                "summary": "Get a single warehouse by id",
+                "tags": [
+                    "Warehouse"
+                ],
+                "parameters": [
+                    {
+                        "name": "warehouse",
+                        "in": "path",
+                        "required": true,
+                        "description": "The warehouse ID",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "`WarehouseResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/WarehouseResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            },
+            "put": {
+                "operationId": "warehouses.update",
+                "summary": "Update the specified warehouse",
+                "tags": [
+                    "Warehouse"
+                ],
+                "parameters": [
+                    {
+                        "name": "warehouse",
+                        "in": "path",
+                        "required": true,
+                        "description": "The warehouse ID",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateWarehouseRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/WarehouseResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "message",
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    }
+                }
+            },
+            "delete": {
+                "operationId": "warehouses.destroy",
+                "summary": "Remove the specified warehouse",
+                "tags": [
+                    "Warehouse"
+                ],
+                "parameters": [
+                    {
+                        "name": "warehouse",
+                        "in": "path",
+                        "required": true,
+                        "description": "The warehouse ID",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "enum": [
+                                                "The Warehouse has been deleted successfully"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "message"
+                                    ]
+                                }
+                            }
+                        }
                     },
                     "404": {
                         "$ref": "#/components/responses/ModelNotFoundException"
@@ -571,17 +1295,54 @@
         }
     },
     "components": {
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "description": "Enter your Bearer token to access protected endpoints",
+                "scheme": "bearer"
+            }
+        },
         "schemas": {
+            "CategoryResource": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "slug": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "products_count": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "name",
+                    "slug",
+                    "description"
+                ],
+                "title": "CategoryResource"
+            },
             "LoginRequest": {
                 "type": "object",
                 "properties": {
                     "email": {
                         "type": "string",
                         "format": "email",
+                        "description": "The email address of the user.",
+                        "example": "admin@stockmaster.com",
                         "maxLength": 255
                     },
                     "password": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The password of the user.",
+                        "example": "Password$1234"
                     }
                 },
                 "required": [
@@ -685,6 +1446,25 @@
                 ],
                 "title": "RegisterRequest"
             },
+            "StoreCategoryRequest": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "description": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    }
+                },
+                "required": [
+                    "name"
+                ],
+                "title": "StoreCategoryRequest"
+            },
             "StoreProductRequest": {
                 "type": "object",
                 "properties": {
@@ -735,6 +1515,88 @@
                 ],
                 "title": "StoreProductRequest"
             },
+            "StoreWarehouseRequest": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "location": {
+                        "type": "string",
+                        "maxLength": 500
+                    },
+                    "capacity": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "minimum": 0
+                    },
+                    "is_active": {
+                        "type": [
+                            "boolean",
+                            "null"
+                        ]
+                    }
+                },
+                "required": [
+                    "name",
+                    "location"
+                ],
+                "title": "StoreWarehouseRequest"
+            },
+            "TransferStockRequest": {
+                "type": "object",
+                "properties": {
+                    "product_id": {
+                        "type": "integer"
+                    },
+                    "source_warehouse_id": {
+                        "type": "integer"
+                    },
+                    "destination_warehouse_id": {
+                        "type": "integer"
+                    },
+                    "quantity": {
+                        "type": "integer",
+                        "minimum": 1
+                    },
+                    "description": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 500
+                    }
+                },
+                "required": [
+                    "product_id",
+                    "source_warehouse_id",
+                    "destination_warehouse_id",
+                    "quantity"
+                ],
+                "title": "TransferStockRequest"
+            },
+            "UpdateCategoryRequest": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "description": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    }
+                },
+                "required": [
+                    "name"
+                ],
+                "title": "UpdateCategoryRequest"
+            },
             "UpdateProductRequest": {
                 "type": "object",
                 "properties": {
@@ -775,6 +1637,39 @@
                     }
                 },
                 "title": "UpdateProductRequest"
+            },
+            "UpdateWarehouseRequest": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 255
+                    },
+                    "location": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 500
+                    },
+                    "capacity": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "minimum": 0
+                    },
+                    "is_active": {
+                        "type": [
+                            "boolean",
+                            "null"
+                        ]
+                    }
+                },
+                "title": "UpdateWarehouseRequest"
             },
             "User": {
                 "type": "object",
@@ -819,6 +1714,52 @@
                     "updated_at"
                 ],
                 "title": "User"
+            },
+            "WarehouseResource": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "slug": {
+                        "type": "string"
+                    },
+                    "location": {
+                        "type": "string"
+                    },
+                    "capacity": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "is_active": {
+                        "type": "boolean"
+                    },
+                    "inventories_count": {
+                        "type": "integer"
+                    },
+                    "total_capacity": {
+                        "type": "string"
+                    },
+                    "used_capacity": {
+                        "type": "string"
+                    },
+                    "available_capacity": {
+                        "type": "string"
+                    },
+                    "utilization_percentage": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "name",
+                    "slug",
+                    "location",
+                    "capacity",
+                    "is_active"
+                ],
+                "title": "WarehouseResource"
             }
         },
         "responses": {
