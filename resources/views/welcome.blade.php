@@ -363,6 +363,21 @@
                 <span class="text-4xl font-black text-white tracking-[0.2em] opacity-10 uppercase">StockMaster API @
                     2026</span>
             </div>
+            <!-- Copyright -->
+            <div class="flex gap-3 justify-center items-center fixed bottom-0 w-full text-center py-3  text-sm">
+                {{-- my web-icon --}}
+                <div class="">
+                    <a href="https://diegochacondev.es" target="_blank">
+                        <img src="{{ asset('images/logos/my-web-logo.webp') }}" class="w-[50px] h-[40px]" alt="logo Diego Chacon que redirige a su sitio web" title="Ir a portfolio Diego Chacon" />
+                    </a>
+                </div>
+                <div>
+                    &copy; Developed by: 
+                    <a href="https://diegochacondev.es/" target="_blank" rel="noopener noreferrer" class="underline hover:text-yellow-400">
+                        Diego Chacon Delgado
+                    </a>
+                </div>
+            </div>
         </footer>
     </div>
 
