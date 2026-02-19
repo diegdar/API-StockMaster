@@ -11,8 +11,7 @@
     <link href="https://fonts.bunny.net/css?family=Outfit:300,400,500,600,700,800&display=swap" rel="stylesheet" />
 
     <!-- Scripts & Styles -->
-    @vite(['resources/css/welcome.css', 'resources/js/welcome.js'])
-    <script src="https://cdn.tailwindcss.com"></script>
+    @vite(['resources/css/app.css', 'resources/css/welcome.css', 'resources/js/welcome.js'])
 
     @livewireStyles
 </head>
