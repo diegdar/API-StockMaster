@@ -411,7 +411,7 @@
                     2026</span>
             </div>
             <!-- Copyright -->
-            <div class="flex gap-3 justify-center items-center fixed bottom-0 w-full text-center py-3  text-sm">
+            <div class="flex gap-3 justify-center items-center fixed bottom-0 w-full text-center py-1  text-sm">
                 {{-- my web-icon --}}
                 <div class="">
                     <a href="https://diegochacondev.es" target="_blank">

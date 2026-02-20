@@ -41,12 +41,25 @@ body {
     pointer-events: none;
     transform: translateY(-10px);
     transition: all 0.3s ease;
+    background: rgb(24, 24, 27) !important; /* Solid background */
+    border: 1px solid rgba(245, 158, 11, 0.2); /* Subtle accent border */
 }
 
 #mobile-menu.active {
     opacity: 1;
     pointer-events: auto;
     transform: translateY(0);
+}
+
+.mobile-nav-link {
+    transition: all 0.2s ease;
+}
+
+.mobile-nav-link:hover {
+    background: rgba(245, 158, 11, 0.1);
+    color: white;
+    border-color: rgba(245, 158, 11, 0.5);
+    transform: translateY(-2px);
 }
 
 .dropdown {
