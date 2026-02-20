@@ -270,45 +270,104 @@
                 <div class="glass overflow-hidden rounded-[30px] sm:rounded-[50px] border-zinc-800 shadow-2xl">
                     <div class="p-8 sm:p-20">
                         <h2
-                            class="text-3xl sm:text-5xl font-black text-white tracking-tighter uppercase mb-6 leading-none">
+                            class="text-3xl text-center sm:text-5xl font-black text-white tracking-tighter uppercase mb-6 leading-none">
                             Traslados: El Corazón Logístico</h2>
+                        <!-- Process Diagram -->
                         <div class="grid grid-cols-1 lg:grid-cols-2 gap-16">
                             <div class="space-y-8">
                                 <div class="flex gap-6 border-b border-zinc-800 pb-8">
                                     <div
-                                        class="w-10 h-10 accent-gradient rounded-3xl flex items-center justify-center text-zinc-950 font-black">
+                                        class="w-10 h-10 accent-gradient rounded-3xl flex items-center justify-center text-zinc-950 font-black flex-shrink-0">
                                         01</div>
                                     <div>
-                                        <h4 class="text-white font-black text-lg uppercase mb-2">Atomicidad Nativa</h4>
-                                        <p class="text-xs text-zinc-500 italic">Todo dentro de una transacción MariaDB
-                                            nativa.</p>
+                                        <h4 class="text-white font-black text-lg uppercase mb-2">Requisitos de Almacén
+                                        </h4>
+                                        <p class="text-xs text-zinc-500 italic mb-3">Condiciones de infraestructura
+                                            antes de operar.</p>
+                                        <ul class="text-[11px] space-y-2 text-zinc-400">
+                                            <li class="flex items-center gap-2"><span class="text-amber-500">✔</span>
+                                                Almacenes Origen/Destino deben existir en sistema.</li>
+                                            <li class="flex items-center gap-2"><span class="text-amber-500">✔</span> El
+                                                Almacén de <strong class="text-zinc-300">Destino debe estar
+                                                    Activo</strong>.</li>
+                                            <li class="flex items-center gap-2"><span class="text-amber-500">✔</span>
+                                                IDs de origen y destino deben ser estrictamente distintos.</li>
+                                        </ul>
                                     </div>
                                 </div>
                                 <div class="flex gap-6 border-b border-zinc-800 pb-8">
                                     <div
-                                        class="w-10 h-10 accent-gradient rounded-3xl flex items-center justify-center text-zinc-950 font-black">
+                                        class="w-10 h-10 accent-gradient rounded-3xl flex items-center justify-center text-zinc-950 font-black flex-shrink-0">
                                         02</div>
                                     <div>
                                         <h4 class="text-white font-black text-lg uppercase mb-2">Validaciones Reales
                                         </h4>
-                                        <p class="text-xs text-zinc-500 italic">Bloqueo de almacenes inactivos y control
-                                            de capacidad.</p>
+                                        <p class="text-xs text-zinc-500 italic mb-3">Protección contra inconsistencias
+                                            de inventario.</p>
+                                        <ul class="text-[11px] space-y-2 text-zinc-400">
+                                            <li class="flex items-center gap-2"><span class="text-amber-500">📊</span>
+                                                <strong>Suficiencia de Stock</strong>: Verificación en tiempo real del
+                                                almacén emisor.
+                                            </li>
+                                            <li class="flex items-center gap-2"><span class="text-amber-500">🏗️</span>
+                                                <strong>Control de Capacidad</strong>: El receptor debe tener espacio
+                                                físico disponible.
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="flex gap-6">
+                                    <div
+                                        class="w-10 h-10 bg-red-500/20 rounded-3xl flex items-center justify-center text-red-500 border border-red-500/30 font-black flex-shrink-0">
+                                        ⚠️</div>
+                                    <div>
+                                        <h4 class="font-black text-lg uppercase mb-2 text-red-400">Fallo
+                                            Atómico (Rollback)</h4>
+                                        <p class="text-xs text-zinc-400 leading-relaxed">
+                                            Nuestro sistema sigue el principio de <strong class="text-white">"Todo o
+                                                Nada"</strong>. Si durante el proceso de traslado ocurre un error (falta
+                                            de stock de último minuto, pérdida de conexión o violación de capacidad), la
+                                            <strong>transacción completa se deshace (Rollback)</strong>.
+                                        </p>
+                                        <p class="text-[10px] text-zinc-500 mt-2 italic">Esto garantiza que nunca
+                                            existan "items fantasmales" que salieron de un almacén pero nunca llegaron
+                                            al otro.</p>
                                     </div>
                                 </div>
                             </div>
-
                             <div
                                 class="bg-zinc-950/80 rounded-3xl p-8 border border-zinc-800 overflow-x-auto scroll-hide">
                                 <h3 class="text-amber-500 font-bold text-[10px] uppercase tracking-[0.3em] mb-8">Flujo
-                                    de Ejecución</h3>
+                                    de Ejecución Técnica</h3>
                                 <div class="space-y-4 font-mono text-[11px] whitespace-nowrap lg:whitespace-normal">
-                                    <div class="text-emerald-500/80">🔒 DB::beginTransaction()</div>
-                                    <div class="flex items-center gap-3 text-zinc-600"><span>1. Check stock
-                                            origen</span></div>
-                                    <div class="flex items-center gap-3 text-zinc-600"><span>2. Check cap.
-                                            destino</span></div>
-                                    <div class="flex items-center gap-3 text-zinc-600"><span>3. Mover items</span></div>
-                                    <div class="text-emerald-500/80">✅ DB::commit()</div>
+                                    <div class="text-emerald-500/80 flex items-center gap-2">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                                        DB::beginTransaction()
+                                    </div>
+                                    <div class="flex flex-col gap-2 pl-4 border-l border-zinc-800">
+                                        <div class="flex items-center gap-3 text-zinc-500"><span>1. Request ->
+                                                TransferStockDTO</span></div>
+                                        <div class="flex items-center gap-3 text-zinc-500"><span>2.
+                                                validateSufficientStock($source)</span></div>
+                                        <div class="flex items-center gap-3 text-zinc-500"><span>3.
+                                                validateDestinationCapacity($dest)</span></div>
+                                        <div class="flex items-center gap-3 text-zinc-400 font-bold"><span>4.
+                                                movementRepository->create('OUT')</span></div>
+                                        <div class="flex items-center gap-3 text-zinc-400 font-bold"><span>5.
+                                                movementRepository->create('IN')</span></div>
+                                    </div>
+                                    <div class="text-emerald-500/80 pt-2">✅ DB::commit() <span
+                                            class="text-zinc-600 ml-2">// Éxito Total</span></div>
+                                    <div class="text-red-500/60 pt-1">❌ DB::rollBack() <span
+                                            class="text-zinc-600 ml-2">// Si falla paso 2, 3, 4 o 5</span></div>
+                                </div>
+                                <div class="mt-12 flex flex-col items-center justify-center gap-2 p-2 bg-zinc-900/50 rounded-xl border border-zinc-800">
+                                    <p class="text-[10px] text-zinc-500 uppercase font-black mb-2 tracking-widest">
+                                        Estado del Almacén</p>
+                                    <div class="flex items-center justify-between">
+                                        <span
+                                            class="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-500 text-[9px] font-bold">ACTIVE_REQUIRED</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -317,7 +376,7 @@
             </section>
 
             <!-- Test Users & Scramble -->
-            <section id="users" class="mb-32">
+            <section id="users" class="mb-10">
                 <h2 class="text-3xl sm:text-4xl font-black text-white tracking-tighter uppercase mb-2 text-center">
                     Entorno Sandbox</h2>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center mt-12">
@@ -344,18 +403,6 @@
                     </div>
                 </div>
             </section>
-
-            <section id="scramble" class="mb-32 text-center">
-                <div class="glass border-zinc-800 rounded-[50px] p-8 sm:p-24 shadow-2xl relative overflow-hidden">
-                    <h2 class="text-4xl sm:text-6xl font-black text-white tracking-tighter uppercase mb-6 leading-none">
-                        Documentación <span class="text-amber-500">Scramble</span></h2>
-                    <p class="text-zinc-400 text-lg mb-12 italic">Análisis estático automático con consola interactiva
-                        OpenAPI 3.0.</p>
-                    <a href="{{ url('/docs/api') }}" target="_blank"
-                        class="accent-gradient px-12 py-6 rounded-2xl text-zinc-950 font-black text-xl hover:brightness-110 transition-all inline-block shadow-2xl">EXPLORAR
-                        CONSOLA</a>
-                </div>
-            </section>
         </main>
 
         <footer class="border-t border-zinc-900 bg-zinc-950 py-10">
@@ -368,12 +415,14 @@
                 {{-- my web-icon --}}
                 <div class="">
                     <a href="https://diegochacondev.es" target="_blank">
-                        <img src="{{ asset('images/logos/my-web-logo.webp') }}" class="w-[50px] h-[40px]" alt="logo Diego Chacon que redirige a su sitio web" title="Ir a portfolio Diego Chacon" />
+                        <img src="{{ asset('images/logos/my-web-logo.webp') }}" class="w-[50px] h-[40px]"
+                            alt="logo Diego Chacon que redirige a su sitio web" title="Ir a portfolio Diego Chacon" />
                     </a>
                 </div>
                 <div>
-                    &copy; Developed by: 
-                    <a href="https://diegochacondev.es/" target="_blank" rel="noopener noreferrer" class="underline hover:text-yellow-400">
+                    &copy; Developed by:
+                    <a href="https://diegochacondev.es/" target="_blank" rel="noopener noreferrer"
+                        class="underline hover:text-yellow-400">
                         Diego Chacon Delgado
                     </a>
                 </div>
