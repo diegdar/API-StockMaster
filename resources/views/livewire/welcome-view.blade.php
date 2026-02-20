@@ -26,7 +26,8 @@
 
         <div class="order-1 lg:order-2">
             <h3 class="text-white text-3xl sm:text-4xl font-black tracking-tighter mb-8 uppercase">Stack Tecnológico
-                <span class="text-zinc-600 block text-lg font-bold">Núcleo de la Aplicación</span></h3>
+                <span class="text-zinc-600 block text-lg font-bold">Núcleo de la Aplicación</span>
+            </h3>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 @foreach($stack as $item)
                     <div
@@ -56,8 +57,8 @@
                     </div>
                     <div class="grid grid-cols-1 gap-2">
                         @foreach($items as $ep)
-                            <div
-                                class="endpoint-card glass p-4 sm:p-5 rounded-2xl border-zinc-800 flex flex-col md:flex-row md:items-center gap-4 transition-all duration-300 group/ep">
+                            <a href="{{ url('/docs/api') }}#/operations/{{ $ep[5] }}" target="_blank"
+                                class="endpoint-card glass p-4 sm:p-5 rounded-2xl border-zinc-800 flex flex-col md:flex-row md:items-center gap-4 transition-all duration-300 group/ep hover:border-amber-500/40 hover:translate-x-1">
                                 <div class="flex items-center gap-3 md:w-48 flex-shrink-0">
                                     <span
                                         class="px-2 py-0.5 rounded-lg text-[10px] font-black {{ str_contains($ep[0], 'POST') ? 'bg-blue-500/10 text-blue-500' : (str_contains($ep[0], 'GET') ? 'bg-green-500/10 text-green-500' : 'bg-amber-500/10 text-amber-500') }}">{{ $ep[0] }}</span>
@@ -67,13 +68,17 @@
                                 <div class="flex-1">
                                     <h4
                                         class="text-white font-bold text-xs uppercase tracking-tight group-hover/ep:text-amber-500 transition-colors">
-                                        {{ $ep[2] }}</h4>
+                                        {{ $ep[2] }}
+                                    </h4>
                                     <p class="text-[11px] text-zinc-500 italic mt-0.5 leading-relaxed">{{ $ep[3] }}</p>
                                 </div>
                                 <div class="md:w-32 flex flex-col items-end gap-1">
                                     <span class="text-[10px] font-bold text-zinc-600 uppercase">{{ $ep[4] }}</span>
+                                    <span
+                                        class="text-[9px] text-amber-500/0 group-hover/ep:text-amber-500/80 transition-all font-bold">PROBAR
+                                        API ↗</span>
                                 </div>
-                            </div>
+                            </a>
                         @endforeach
                     </div>
                 </div>
