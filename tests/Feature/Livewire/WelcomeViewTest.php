@@ -31,7 +31,9 @@ class WelcomeViewTest extends TestCase
         Livewire::test(WelcomeView::class)
             ->assertViewHas('apiEntities', function ($entities) {
                 return isset($entities['Autenticación y Perfil']) &&
-                    count($entities['Autenticación y Perfil']) === 3;
+                    count($entities['Autenticación y Perfil']) === 3 &&
+                    isset($entities['Autenticación y Perfil'][0][5]) &&
+                    $entities['Autenticación y Perfil'][0][5] === 'auth.register';
             });
     }
 }
