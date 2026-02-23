@@ -47,4 +47,9 @@ class ProductService
 
         $this->productRepository->delete($product);
     }
+
+    public function getProductsByWarehouse(Warehouse $warehouse): BaseCollection
+    {
+        return $this->productRepository->getProductsByWarehouse($warehouse);
+    }
 }
