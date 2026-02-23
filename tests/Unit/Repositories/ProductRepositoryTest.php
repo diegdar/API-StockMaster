@@ -117,7 +117,7 @@ class ProductRepositoryTest extends TestCase
         $expected = $this->createProductWithInventory($warehouses->first()->id, 100);
         $this->createProductWithInventory($warehouses->last()->id, 50);
 
-        $result = $this->repository->getProductsByWarehouse($warehouses->first()->id);
+        $result = $this->repository->getProductsByWarehouse($warehouses->first());
 
         $this->assertCount(1, $result);
         $this->assertEquals($expected->product->id, $result->first()->id);
