@@ -3,6 +3,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Api;
 
+use App\Models\Inventory;
+use App\Models\Product;
+use App\Models\Warehouse;
 use Laravel\Passport\Passport;
 use Tests\Feature\Api\Traits\ApiTestUsersTrait;
 use Tests\Feature\Api\Traits\ProductApiTestTrait;
@@ -150,5 +153,31 @@ class ProductApiTest extends TestCase
             ->assertJsonFragment([
                 'sku' => $entities->product->sku,
             ]);
+    }
+
+    public function test_it_can_get_products_by_warehouse()
+    {
+        Passport::actingAs($this->admin);
+
+        $warehouse = Warehouse::factory()->create();
+        $product1 = Product::factory()->create();
+        $product2 = Product::factory()->create();
+        Inventory::factory()->create([
+            'product_id' => $product1->id,
+            'warehouse_id' => $warehouse->id,
+            'quantity' => 100,
+        ]);
+        Inventory::factory()->create([
+            'product_id' => $product2->id,
+            'warehouse_id' => $warehouse->id,
+            'quantity' => 50,
+        ]);
+
+        $response = $this->getJson(route('products.by-warehouse', $warehouse->id));
+
+        $response->assertStatus(200)
+            ->assertJsonCount(2, 'data')
+            ->assertJsonFragment(['id' => $product1->id])
+            ->assertJsonFragment(['id' => $product2->id]);
     }
 }
