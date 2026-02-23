@@ -4,9 +4,11 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Models\Product;
+use App\Models\Warehouse;
 use App\Repositories\Contracts\ProductRepositoryInterface;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection as BaseCollection;
 
 class ProductRepository implements ProductRepositoryInterface
 {
@@ -27,13 +29,11 @@ class ProductRepository implements ProductRepositoryInterface
         })->with(['inventories', 'category', 'supplier'])->get();
     }
 
-    public function getProductsByWarehouse(int $warehouseId): Collection
+    public function getProductsByWarehouse(Warehouse $warehouse): BaseCollection
     {
-        return Product::whereHas('inventories', function ($query) use ($warehouseId) {
-            $query->where('warehouse_id', $warehouseId);
-        })->with(['inventories' => function ($query) use ($warehouseId) {
-            $query->where('warehouse_id', $warehouseId);
-        }, 'category', 'supplier'])->get();
+        return $warehouse->inventories()
+                ->get()
+                ->pluck('product');
     }
 
     public function getProductsBySupplier(int $supplierId): Collection
