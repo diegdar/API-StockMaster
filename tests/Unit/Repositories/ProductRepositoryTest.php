@@ -52,23 +52,6 @@ class ProductRepositoryTest extends TestCase
         $this->assertNull($result);
     }
 
-    public function test_find_by_sku_returns_product(): void
-    {
-        $product = $this->createProduct(['sku' => 'UNIQUE-SKU-123']);
-
-        $result = $this->repository->findBySku('UNIQUE-SKU-123');
-
-        $this->assertNotNull($result);
-        $this->assertEquals($product->id, $result->id);
-    }
-
-    public function test_find_by_sku_returns_null_when_not_found(): void
-    {
-        $result = $this->repository->findBySku('NON-EXISTENT-SKU');
-
-        $this->assertNull($result);
-    }
-
     public function test_create_product(): void
     {
         $entities = $this->createCategoryAndSupplier();

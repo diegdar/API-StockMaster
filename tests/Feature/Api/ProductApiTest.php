@@ -263,4 +263,17 @@ class ProductApiTest extends TestCase
 
         $this->assertDatabaseHas('products', ['id' => $product->id]);
     }
+
+    public function test_it_can_get_product_by_slug()
+    {
+        $product = Product::factory()->create();
+        Passport::actingAs($this->admin);
+        
+        $response = $this->getJson(route('products.show-by-sku', $product->sku));
+
+        $response->assertStatus(200)
+            ->assertJsonFragment([
+                'sku' => $product->sku,
+            ]);
+    }
 }
