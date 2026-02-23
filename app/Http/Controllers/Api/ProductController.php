@@ -10,6 +10,7 @@ use App\Http\Requests\UpdateProductRequest;
 use App\DTO\Product\CreateProductDTO;
 use App\DTO\Product\UpdateProductDTO;
 use App\Models\Product;
+use App\Models\Warehouse;
 use App\Services\ProductService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Routing\Controllers\HasMiddleware;
@@ -53,7 +54,7 @@ class ProductController extends Controller implements HasMiddleware
     /**
      * Get a single product by id.
      *
-     * @param int $productId the product id to show
+     * @param int $product_id the product id to show
      * @return ProductResource
      */
     public function show(Product $product): ProductResource
@@ -64,7 +65,7 @@ class ProductController extends Controller implements HasMiddleware
     /**
      * Get a single product by sku.
      *
-     * @param string $productSku the product sku
+     * @param string $product_sku the product sku
      * @return ProductResource The product resource
      */
     public function showBySku(Product $product): ProductResource
@@ -92,7 +93,7 @@ class ProductController extends Controller implements HasMiddleware
     /**
      * Delete a product.
      *
-     * @param int $productId the product id
+     * @param int $prodcut_id the product id
      * @return JsonResponse A JSON response with a success message
      */
     public function destroy(Product $product): JsonResponse
@@ -103,4 +104,13 @@ class ProductController extends Controller implements HasMiddleware
             'message' => "The Product has been deleted successfully",
         ], 200);
     }
+
+    public function getProductsByWarehouse(Warehouse $warehouse): AnonymousResourceCollection
+    {
+        $products = $this->productService->getProductsByWarehouse($warehouse);
+
+        return ProductResource::collection($products);
+    }
+
+
 }
