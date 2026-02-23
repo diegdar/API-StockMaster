@@ -50,10 +50,25 @@ class ProductController extends Controller implements HasMiddleware
         ], 201);
     }
 
+    /**
+     * Get a single product by id.
+     *
+     * @param int $productId the product id to show
+     * @return ProductResource
+     */
     public function show(Product $product): ProductResource
     {
-        $product = $this->productService->findById($product->id);
+        return new ProductResource($product);
+    }
 
+    /**
+     * Get a single product by sku.
+     *
+     * @param string $productSku the product sku
+     * @return ProductResource The product resource
+     */
+    public function showBySku(Product $product): ProductResource
+    {
         return new ProductResource($product);
     }
 
@@ -69,9 +84,17 @@ class ProductController extends Controller implements HasMiddleware
 
         $updatedProduct = $this->productService->update($product, $dto->toArray());
 
-        return new ProductResource($updatedProduct);
+        return response()->json([
+            'message' => "The Product '{$updatedProduct->name}' has been updated successfully",
+        ], 200);
     }
 
+    /**
+     * Delete a product.
+     *
+     * @param int $productId the product id
+     * @return JsonResponse A JSON response with a success message
+     */
     public function destroy(Product $product): JsonResponse
     {
         $this->productService->delete($product);

@@ -13,8 +13,6 @@ interface ProductRepositoryInterface
 
     public function findById(int $id): ?Product;
 
-    public function findBySku(string $sku): ?Product;
-
     public function getLowStockProducts(): Collection;
 
     public function getProductsByWarehouse(int $warehouseId): Collection;

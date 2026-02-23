@@ -5,9 +5,10 @@ namespace App\Services;
 
 use App\Exceptions\DeletionException;
 use App\Models\Product;
+use App\Models\Warehouse;
 use App\Repositories\Contracts\ProductRepositoryInterface;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection as BaseCollection;
 
 class ProductService
 {
@@ -18,11 +19,6 @@ class ProductService
     public function getAll(int $perPage = 15): LengthAwarePaginator
     {
         return $this->productRepository->getAll($perPage);
-    }
-
-    public function findById(int $id): ?Product
-    {
-        return $this->productRepository->findById($id);
     }
 
     public function create(array $data): Product

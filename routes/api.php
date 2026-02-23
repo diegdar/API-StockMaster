@@ -18,6 +18,11 @@ Route::middleware(['auth:api', 'throttle:api'])->group(function () {
     })->name('user.profile');
 
     Route::apiResource('products', ProductController::class)->names('products');
+    // Product custom routes (must be before apiResource)
+    Route::prefix('products')->name('products.')->group(function () {
+        Route::get('/sku/{product:sku}', [ProductController::class, 'showBySku'])->name('show-by-sku');
+    });
+
     Route::apiResource('categories', CategoryController::class)->names('categories');
 
     // Warehouse custom routes (must be before apiResource)

@@ -20,11 +20,6 @@ class ProductRepository implements ProductRepositoryInterface
         return Product::with(['category', 'supplier', 'inventories'])->find($id);
     }
 
-    public function findBySku(string $sku): ?Product
-    {
-        return Product::where('sku', $sku)->first();
-    }
-
     public function getLowStockProducts(): Collection
     {
         return Product::whereHas('inventories', function ($query) {
