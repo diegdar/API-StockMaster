@@ -11,6 +11,7 @@ use App\Models\StockMovement;
 use App\Models\Warehouse;
 use App\Repositories\Contracts\ProductRepositoryInterface;
 use App\Services\ProductService;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Mockery;
 use Mockery\MockInterface;
@@ -160,5 +161,67 @@ class ProductServiceTest extends TestCase
         $result = $this->service->getProductsByWarehouse($warehouse);
 
         $this->assertCount(1, $result);
+    }
+
+    public function test_get_products_by_supplier_delegates_to_repository(): void
+    {
+        $supplier = $this->createSupplier();
+        $products = new EloquentCollection([$this->createProduct(['supplier_id' => $supplier->id])]);
+
+        $this->repositoryMock
+            ->shouldReceive('getProductsBySupplier')
+            ->with($supplier)
+            ->once()
+            ->andReturn($products);
+
+        $result = $this->service->getProductsBySupplier($supplier);
+
+        $this->assertCount(1, $result);
+    }
+
+    public function test_get_products_by_supplier_returns_empty_collection(): void
+    {
+        $supplier = $this->createSupplier();
+
+        $this->repositoryMock
+            ->shouldReceive('getProductsBySupplier')
+            ->with($supplier)
+            ->once()
+            ->andReturn(new EloquentCollection());
+
+        $result = $this->service->getProductsBySupplier($supplier);
+
+        $this->assertCount(0, $result);
+    }
+
+    public function test_get_products_by_category_delegates_to_repository(): void
+    {
+        $category = $this->createCategory();
+        $products = new EloquentCollection([$this->createProduct(['category_id' => $category->id])]);
+
+        $this->repositoryMock
+            ->shouldReceive('getProductsByCategory')
+            ->with($category)
+            ->once()
+            ->andReturn($products);
+
+        $result = $this->service->getProductsByCategory($category);
+
+        $this->assertCount(1, $result);
+    }
+
+    public function test_get_products_by_category_returns_empty_collection(): void
+    {
+        $category = $this->createCategory();
+
+        $this->repositoryMock
+            ->shouldReceive('getProductsByCategory')
+            ->with($category)
+            ->once()
+            ->andReturn(new EloquentCollection());
+
+        $result = $this->service->getProductsByCategory($category);
+
+        $this->assertCount(0, $result);
     }
 }
