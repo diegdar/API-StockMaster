@@ -129,7 +129,7 @@ class ProductController extends Controller implements HasMiddleware
     }
 
     /**
-     * Get all products in a specific warehouse.
+     * Get products by warehouse id.
      *
      * @param Warehouse $warehouse The warehouse id to get products from
      * @return AnonymousResourceCollection A collection of ProductResource
@@ -142,9 +142,9 @@ class ProductController extends Controller implements HasMiddleware
     }
 
     /**
-     * Retrieve a collection of products belonging to a specific supplier.
+     * Get products by supplier id.
      *
-     * @param Supplier $supplier The supplier id to get products from
+     * @param Supplier $supplier The supplier to get products from
      * @return AnonymousResourceCollection A collection of ProductResource
      */
     public function getProductsBySupplierId(Supplier $supplier): AnonymousResourceCollection
@@ -154,12 +154,12 @@ class ProductController extends Controller implements HasMiddleware
         return ProductResource::collection($products);
     }
 
-        /**
-         * Retrieve a collection of products belonging to a specific category.
-         *
-         * @param category $category The category id to get products from
-         * @return AnonymousResourceCollection A collection of ProductResource
-         */
+    /**
+     * Get products by category id.
+     *
+     * @param Category $category The category to get products from
+     * @return AnonymousResourceCollection A collection of ProductResource
+     */
     public function getProductsByCategoryId(Category $category): AnonymousResourceCollection
     {
         $products = $this->productService->getProductsByCategory($category);
