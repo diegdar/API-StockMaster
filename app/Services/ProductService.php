@@ -4,10 +4,13 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Exceptions\DeletionException;
+use App\Models\Category;
 use App\Models\Product;
+use App\Models\Supplier;
+use App\Models\Warehouse;
 use App\Repositories\Contracts\ProductRepositoryInterface;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection as BaseCollection;
 
 class ProductService
 {
@@ -18,11 +21,6 @@ class ProductService
     public function getAll(int $perPage = 15): LengthAwarePaginator
     {
         return $this->productRepository->getAll($perPage);
-    }
-
-    public function findById(int $id): ?Product
-    {
-        return $this->productRepository->findById($id);
     }
 
     public function create(array $data): Product
@@ -50,5 +48,20 @@ class ProductService
         }
 
         $this->productRepository->delete($product);
+    }
+
+    public function getProductsByWarehouse(Warehouse $warehouse): BaseCollection
+    {
+        return $this->productRepository->getProductsByWarehouse($warehouse);
+    }
+
+    public function getProductsByCategory(Category $category): BaseCollection
+    {
+        return $this->productRepository->getProductsByCategory($category);
+    }
+
+    public function getProductsBySupplier(Supplier $supplier): BaseCollection
+    {
+        return $this->productRepository->getProductsBySupplier($supplier);
     }
 }

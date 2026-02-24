@@ -6,11 +6,11 @@ namespace Tests\Unit\Repositories;
 use App\Models\StockMovement;
 use App\Repositories\Contracts\StockMovementRepositoryInterface;
 use Tests\TestCase;
-use Tests\Unit\Repositories\Traits\RepositoryTestTrait;
+use Tests\Traits\WarehouseTestTrait;
 
 class StockMovementRepositoryTest extends TestCase
 {
-    use RepositoryTestTrait;
+    use WarehouseTestTrait;
 
     private StockMovementRepositoryInterface $repository;
 

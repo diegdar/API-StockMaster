@@ -34,13 +34,17 @@ class WelcomeView extends Component
                 ['GET', '/api/categories/{id}', 'Mostrar una Categoría', 'Acceso directo por ID numérico.', 'Admin, Worker, Viewer', 'categories.show'],
                 ['PUT', '/api/categories/{id}', 'Actualizar una Categoría', 'Acceso directo por ID numérico.', 'Admin', 'categories.update'],
                 ['DELETE', '/api/categories/{id}', 'Borrado Seguro', 'Falla con 422 si hay productos asociados (Restringido).', 'Admin', 'categories.destroy'],
-            ],            
+            ],
             'Gestión de Productos' => [
                 ['GET', '/api/products', 'Listar Productos', 'Soporta paginación. Roles: Todos.', 'Admin, Worker, Viewer', 'products.index'],
                 ['POST', '/api/products', 'Crear Producto', 'Requiere SKU único, unit_price/unit_cost (numeric, min:0) y valuation_strategy (fifo, lifo, avg).', 'Admin', 'products.store'],
                 ['GET', '/api/products/{id}', 'Ver Detalle', 'Búsqueda por ID. Retorna relaciones de categoría y proveedor.', 'Admin, Worker, Viewer', 'products.show'],
                 ['PUT/PATCH', '/api/products/{id}', 'Actualizar', 'Permite actualización parcial. SKU único excluyendo actual.', 'Admin', 'products.update'],
                 ['DELETE', '/api/products/{id}', 'Eliminar', 'Protección de integridad: Falla si existen movimientos o stock asociado.', 'Admin', 'products.destroy'],
+                ['GET', '/api/products/sku/{sku}', 'Buscar por SKU', 'Búsqueda de producto por código SKU único.', 'Admin, Worker, Viewer', 'products.show-by-sku'],
+                ['GET', '/api/products/warehouse/{warehouse}', 'Productos por Almacén', 'Lista productos disponibles en un almacén específico.', 'Admin, Worker, Viewer', 'products.by-warehouseId'],
+                ['GET', '/api/products/supplier/{supplier}', 'Productos por Proveedor', 'Lista productos asociados a un proveedor específico.', 'Admin, Worker, Viewer', 'products.by-supplierId'],
+                ['GET', '/api/products/category/{category}', 'Productos por Categoría', 'Lista productos pertenecientes a una categoría específica.', 'Admin, Worker, Viewer', 'products.by-categoryId'],
             ],
             'Almacenes y Logística' => [
                 ['GET', '/api/warehouses', 'Listar Almacenes', 'Vista resumida con nombres y ubicaciones.', 'Admin, Worker, Viewer', 'warehouses.index'],

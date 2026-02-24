@@ -208,6 +208,10 @@ Regla [`StrongPassword`](app/Rules/StrongPassword.php):
 | GET | `/api/products/{id}` | Mostrar producto individual |
 | PUT/PATCH | `/api/products/{id}` | Actualizar producto |
 | DELETE | `/api/products/{id}` | Eliminar producto |
+| GET | `/api/products/sku/{sku}` | Mostrar producto por SKU |
+| GET | `/api/products/warehouse/{warehouse}` | Productos por almacén |
+| GET | `/api/products/supplier/{supplier}` | Productos por proveedor |
+| GET | `/api/products/category/{category}` | Productos por categoría |
 
 ### Categorías (Protegido)
 
@@ -356,26 +360,15 @@ php artisan db:seed
 | [`ProductSeeder`](database/seeders/ProductSeeder.php) | Productos | 20 productos |
 | [`StockMovementSeeder`](database/seeders/StockMovementSeeder.php) | Movimientos | ~100-200 movimientos |
 
-### Orden de Ejecución
+### Usuarios de Prueba
 
-```mermaid
-flowchart TD
-    A[RoleAndPermissionSeeder] --> B[UserSeeder]
-    B --> C[CategorySeeder]
-    C --> D[SupplierSeeder]
-    D --> E[WarehouseSeeder]
-    E --> F[ProductSeeder]
-    F --> G[StockMovementSeeder]
-    
-    note for G "Dispara StockMovementObserver<br/>para poblar Inventory"
-```
+El sistema incluye tres tipos de usuarios con diferentes roles:
 
-### Usuario de Prueba
-
-| Campo | Valor |
-|-------|-------|
-| Email | admin@stockmaster.com |
-| Password | Password$1234 |
+| Rol | Email | Password | Permisos |
+|-----|-------|----------|----------|
+| **Admin** | admin@stockmaster.com | Password$1234 | Acceso total: CRUD productos, categorías, almacenes, transferencias |
+| **Worker** | worker@stockmaster.com | Password$1234 | Transferencias entre almacenes, consulta de inventario |
+| **Viewer** | viewer@stockmaster.com | Password$1234 | Solo lectura de datos |
 
 ---
 
@@ -443,58 +436,6 @@ API-StockMaster/
 ├── routes/
 │   └── api.php                       # Rutas API con nombres
 └── tests/                            # Feature y Unit Tests
-```
-
----
-
-## 🔧 Servicios Clave
-
-### WarehouseService
-
-Gestiona la lógica de negocio de almacenes:
-
-| Método | Descripción |
-|--------|-------------|
-| `getAll()` | Listado paginado |
-| `create()` | Crear almacén |
-| `update()` | Actualizar almacén |
-| `delete()` | Eliminar (valida inventario) |
-| `transferBetweenWarehouses()` | Transferencia con validaciones |
-| `getWarehouseCapacity()` | Métricas de capacidad |
-| `getWarehousesWithCapacity()` | Todos con métricas |
-
-### ProductService
-
-Gestiona productos con validación de dependencias:
-
-| Método | Descripción |
-|--------|-------------|
-| `getAll()` | Listado paginado |
-| `findById()` | Búsqueda por ID |
-| `create()` | Crear producto |
-| `update()` | Actualizar producto |
-| `delete()` | Eliminar (valida inventario, movimientos, alertas) |
-
-### CategoryService
-
-Gestiona categorías con auto-generación de slugs:
-
-| Método | Descripción |
-|--------|-------------|
-| `getAllCategories()` | Listado paginado |
-| `findCategoryById()` | Búsqueda por ID |
-| `findCategoryBySlug()` | Búsqueda por slug |
-| `createCategory()` | Crear categoría |
-| `updateCategory()` | Actualizar categoría |
-| `deleteCategory()` | Eliminar (valida productos asociados) |
-
-### InventoryValuationService
-
-Calcula el valor del inventario usando estrategias:
-
-```php
-$service = new InventoryValuationService(new FifoValuation());
-$value = $service->calculate($product);
 ```
 
 ---

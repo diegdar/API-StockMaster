@@ -6,11 +6,11 @@ namespace Tests\Unit\Repositories;
 use App\Models\Warehouse;
 use App\Repositories\Contracts\WarehouseRepositoryInterface;
 use Tests\TestCase;
-use Tests\Unit\Repositories\Traits\RepositoryTestTrait;
+use Tests\Traits\EntityCreationTrait;
 
 class WarehouseRepositoryTest extends TestCase
 {
-    use RepositoryTestTrait;
+    use EntityCreationTrait;
 
     private WarehouseRepositoryInterface $repository;
 

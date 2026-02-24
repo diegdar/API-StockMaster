@@ -3,10 +3,14 @@ declare(strict_types=1);
 
 namespace App\Repositories;
 
+use App\Models\Category;
 use App\Models\Product;
+use App\Models\Supplier;
+use App\Models\Warehouse;
 use App\Repositories\Contracts\ProductRepositoryInterface;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection as BaseCollection;
 
 class ProductRepository implements ProductRepositoryInterface
 {
@@ -20,11 +24,6 @@ class ProductRepository implements ProductRepositoryInterface
         return Product::with(['category', 'supplier', 'inventories'])->find($id);
     }
 
-    public function findBySku(string $sku): ?Product
-    {
-        return Product::where('sku', $sku)->first();
-    }
-
     public function getLowStockProducts(): Collection
     {
         return Product::whereHas('inventories', function ($query) {
@@ -32,26 +31,24 @@ class ProductRepository implements ProductRepositoryInterface
         })->with(['inventories', 'category', 'supplier'])->get();
     }
 
-    public function getProductsByWarehouse(int $warehouseId): Collection
+    public function getProductsByWarehouse(Warehouse $warehouse): BaseCollection
     {
-        return Product::whereHas('inventories', function ($query) use ($warehouseId) {
-            $query->where('warehouse_id', $warehouseId);
-        })->with(['inventories' => function ($query) use ($warehouseId) {
-            $query->where('warehouse_id', $warehouseId);
-        }, 'category', 'supplier'])->get();
+        return $warehouse->inventories()
+                ->get()
+                ->pluck('product');
     }
 
-    public function getProductsBySupplier(int $supplierId): Collection
+  public function getProductsBySupplier(Supplier $supplier): Collection
     {
-        return Product::where('supplier_id', $supplierId)
-            ->with(['category', 'supplier', 'inventories'])
+        return $supplier->products()
+            ->with(['category', 'inventories'])
             ->get();
     }
 
-    public function getProductsByCategory(int $categoryId): Collection
+    public function getProductsByCategory(Category  $category): Collection
     {
-        return Product::where('category_id', $categoryId)
-            ->with(['category', 'supplier', 'inventories'])
+        return $category->products()
+            ->with(['supplier', 'inventories'])
             ->get();
     }
 

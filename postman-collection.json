@@ -40,6 +40,11 @@
             "key": "warehouseId",
             "value": "1",
             "type": "string"
+        },
+        {
+            "key": "supplierId",
+            "value": "1",
+            "type": "string"
         }
     ],
     "auth": {
@@ -732,6 +737,192 @@
                             "_postman_previewlanguage": "json",
                             "header": [],
                             "body": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "Get Products by Warehouse",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{adminAccessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/products/warehouse/{{warehouseId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "products",
+                                "warehouse",
+                                "{{warehouseId}}"
+                            ]
+                        },
+                        "description": "Retrieve all products available in a specific warehouse. Requires authentication."
+                    },
+                    "response": [
+                        {
+                            "name": "Products by Warehouse Success",
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\"data\":[{\"id\":1,\"name\":\"Product A\",\"sku\":\"SKU-001\",\"description\":\"Description A\",\"unit_price\":99.99,\"category_id\":1,\"supplier_id\":1,\"valuation_strategy\":\"fifo\",\"min_stock_level\":10},{\"id\":2,\"name\":\"Product B\",\"sku\":\"SKU-002\",\"description\":\"Description B\",\"unit_price\":149.99,\"category_id\":1,\"supplier_id\":1,\"valuation_strategy\":\"fifo\",\"min_stock_level\":5}]}"
+                        },
+                        {
+                            "name": "Empty Result",
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\"data\":[]}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Get Products by Supplier",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{adminAccessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/products/supplier/{{supplierId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "products",
+                                "supplier",
+                                "{{supplierId}}"
+                            ]
+                        },
+                        "description": "Retrieve all products belonging to a specific supplier. Requires authentication."
+                    },
+                    "response": [
+                        {
+                            "name": "Products by Supplier Success",
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\"data\":[{\"id\":1,\"name\":\"Product A\",\"sku\":\"SKU-001\",\"description\":\"Description A\",\"unit_price\":99.99,\"category_id\":1,\"supplier_id\":1,\"valuation_strategy\":\"fifo\",\"min_stock_level\":10},{\"id\":2,\"name\":\"Product B\",\"sku\":\"SKU-002\",\"description\":\"Description B\",\"unit_price\":149.99,\"category_id\":1,\"supplier_id\":1,\"valuation_strategy\":\"fifo\",\"min_stock_level\":5}]}"
+                        },
+                        {
+                            "name": "Empty Result",
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\"data\":[]}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Get Products by Category",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{adminAccessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/products/category/{{categoryId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "products",
+                                "category",
+                                "{{categoryId}}"
+                            ]
+                        },
+                        "description": "Retrieve all products belonging to a specific category. Requires authentication."
+                    },
+                    "response": [
+                        {
+                            "name": "Products by Category Success",
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\"data\":[{\"id\":1,\"name\":\"Product A\",\"sku\":\"SKU-001\",\"description\":\"Description A\",\"unit_price\":99.99,\"category_id\":1,\"supplier_id\":1,\"valuation_strategy\":\"fifo\",\"min_stock_level\":10},{\"id\":3,\"name\":\"Product C\",\"sku\":\"SKU-003\",\"description\":\"Description C\",\"unit_price\":199.99,\"category_id\":1,\"supplier_id\":2,\"valuation_strategy\":\"lifo\",\"min_stock_level\":15}]}"
+                        },
+                        {
+                            "name": "Empty Result",
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\"data\":[]}"
                         }
                     ]
                 }

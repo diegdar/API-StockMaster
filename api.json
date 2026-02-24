@@ -3,7 +3,7 @@
     "info": {
         "title": "StockMaster API Documentation",
         "version": "1.0.0",
-        "description": "<p>API RESTful para gesti\u00f3n avanzada de inventarios multialmac\u00e9n. Incluye control de existencias, auditor\u00eda de movimientos, gesti\u00f3n de proveedores, transferencias entre almacenes y alertas autom\u00e1ticas de reposici\u00f3n.</p>\n\n<h2>\ud83d\udd10 Autenticaci\u00f3n</h2>\n<ol>\n    <li>Usa el endpoint <code>POST /api/login</code> con tus credenciales para obtener un <code>access_token</code>. Copialo y luego utilizalo en cualquier endpoint para poderte autenticar.</li>\n    <li>Pega el token copiado en En la casilla <strong>'Auth > Token'</strong></li>\n    <li>Asegurate de estar en <strong>\"Production\"</strong>, luego haz clic en el boton<strong>\"Send API Request\"</strong> para enviar la solicitud.</li>\n</ol>\n\n<h3>\ud83d\udccb Credenciales de prueba (despu\u00e9s de ejecutar seeders)</h3>\n<ul>\n    <li><strong>Admin:</strong> email: admin@stockmaster.com / password: Password$1234</li>\n    <li><strong>Worker:</strong> email: worker@stockmaster.com / password: Password$1234</li>\n    <li><strong>Viewer:</strong> email: viewer@stockmaster.test / password: Password$1234</li>\n</ul>"
+        "description": "<p>API RESTful para gesti\u00f3n avanzada de inventarios multialmac\u00e9n. Incluye control de existencias, auditor\u00eda de movimientos, gesti\u00f3n de proveedores, transferencias entre almacenes y alertas autom\u00e1ticas de reposici\u00f3n.</p>\n\n<h2>\ud83d\udd10 Autenticaci\u00f3n</h2>\n<ol>\n    <li>Usa el endpoint <code>POST /api/login</code> con tus credenciales para obtener el:<code>\"access_token\"</code></li>\n    <li>Copia el token y luego utilizalo en cualquier endpoint para poderte autenticar.</li>\n    <li>Pega el token copiado en En la casilla <strong>'Auth'</strong><code>Token :</code></li>\n    <li>luego haz clic en el boton<strong>\"Send API Request\"</strong> para enviar la solicitud.</li>\n</ol>\n\n<h3>\ud83d\udccb Credenciales de prueba (despu\u00e9s de ejecutar seeders)</h3>\n<ul>\n    <li><strong>Admin:</strong> email: admin@stockmaster.com / password: Password$1234</li>\n    <li><strong>Worker:</strong> email: worker@stockmaster.com / password: Password$1234</li>\n    <li><strong>Viewer:</strong> email: viewer@stockmaster.test / password: Password$1234</li>\n</ul>"
     },
     "servers": [
         {
@@ -479,6 +479,7 @@
         "/products": {
             "get": {
                 "operationId": "products.index",
+                "summary": "Retrieve a paginated list of products",
                 "tags": [
                     "Product"
                 ],
@@ -629,6 +630,7 @@
             },
             "post": {
                 "operationId": "products.store",
+                "summary": "Store a newly created product",
                 "tags": [
                     "Product"
                 ],
@@ -673,6 +675,7 @@
         "/products/{product}": {
             "get": {
                 "operationId": "products.show",
+                "summary": "Get a single product by id",
                 "tags": [
                     "Product"
                 ],
@@ -716,6 +719,7 @@
             },
             "put": {
                 "operationId": "products.update",
+                "summary": "Update a product",
                 "tags": [
                     "Product"
                 ],
@@ -741,18 +745,18 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "`ProductResource`",
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "type": "object",
                                     "properties": {
-                                        "data": {
-                                            "$ref": "#/components/schemas/ProductResource"
+                                        "message": {
+                                            "type": "string"
                                         }
                                     },
                                     "required": [
-                                        "data"
+                                        "message"
                                     ]
                                 }
                             }
@@ -771,6 +775,7 @@
             },
             "delete": {
                 "operationId": "products.destroy",
+                "summary": "Delete a product",
                 "tags": [
                     "Product"
                 ],
@@ -802,6 +807,199 @@
                                     },
                                     "required": [
                                         "message"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/products/sku/{product}": {
+            "get": {
+                "operationId": "products.show-by-sku",
+                "summary": "Get a single product by sku",
+                "tags": [
+                    "Product"
+                ],
+                "parameters": [
+                    {
+                        "name": "product",
+                        "in": "path",
+                        "required": true,
+                        "description": "The product sku",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "`ProductResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/ProductResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/products/warehouse/{warehouse}": {
+            "get": {
+                "operationId": "products.by-warehouseId",
+                "summary": "Get products by warehouse id",
+                "tags": [
+                    "Product"
+                ],
+                "parameters": [
+                    {
+                        "name": "warehouse",
+                        "in": "path",
+                        "required": true,
+                        "description": "The warehouse id to get products from",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Array of `ProductResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/ProductResource"
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/products/supplier/{supplier}": {
+            "get": {
+                "operationId": "products.by-supplierId",
+                "summary": "Get products by supplier id",
+                "tags": [
+                    "Product"
+                ],
+                "parameters": [
+                    {
+                        "name": "supplier",
+                        "in": "path",
+                        "required": true,
+                        "description": "The supplier to get products from",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Array of `ProductResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/ProductResource"
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/products/category/{category}": {
+            "get": {
+                "operationId": "products.by-categoryId",
+                "summary": "Get products by category id",
+                "tags": [
+                    "Product"
+                ],
+                "parameters": [
+                    {
+                        "name": "category",
+                        "in": "path",
+                        "required": true,
+                        "description": "The category to get products from",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Array of `ProductResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/ProductResource"
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
                                     ]
                                 }
                             }

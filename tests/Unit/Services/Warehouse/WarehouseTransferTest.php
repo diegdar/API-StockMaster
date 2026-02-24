@@ -10,7 +10,7 @@ use App\Models\Inventory;
 use App\Models\StockMovement;
 use App\Services\WarehouseService;
 use Tests\TestCase;
-use Tests\Unit\Services\Warehouse\Traits\WarehouseTestTrait;
+use Tests\Traits\WarehouseTestTrait;
 
 class WarehouseTransferTest extends TestCase
 {
