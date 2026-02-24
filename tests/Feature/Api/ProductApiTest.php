@@ -180,4 +180,64 @@ class ProductApiTest extends TestCase
             ->assertJsonFragment(['id' => $product1->id])
             ->assertJsonFragment(['id' => $product2->id]);
     }
+
+    public function test_it_can_get_products_by_supplier(): void
+    {
+        Passport::actingAs($this->admin);
+
+        $supplier = $this->createSupplier();
+        $product1 = $this->createProduct(['supplier_id' => $supplier->id]);
+        $product2 = $this->createProduct(['supplier_id' => $supplier->id]);
+        $otherProduct = $this->createProduct();
+
+        $response = $this->getJson(route('products.by-supplierId', $supplier->id));
+
+        $response->assertStatus(200)
+            ->assertJsonCount(2, 'data')
+            ->assertJsonFragment(['id' => $product1->id])
+            ->assertJsonFragment(['id' => $product2->id])
+            ->assertJsonMissing(['id' => $otherProduct->id]);
+    }
+
+    public function test_it_returns_empty_collection_when_supplier_has_no_products(): void
+    {
+        Passport::actingAs($this->admin);
+
+        $supplier = $this->createSupplier();
+
+        $response = $this->getJson(route('products.by-supplierId', $supplier->id));
+
+        $response->assertStatus(200)
+            ->assertJsonCount(0, 'data');
+    }
+
+    public function test_it_can_get_products_by_category(): void
+    {
+        Passport::actingAs($this->admin);
+
+        $category = $this->createCategory();
+        $product1 = $this->createProduct(['category_id' => $category->id]);
+        $product2 = $this->createProduct(['category_id' => $category->id]);
+        $otherProduct = $this->createProduct();
+
+        $response = $this->getJson(route('products.by-categoryId', $category->id));
+
+        $response->assertStatus(200)
+            ->assertJsonCount(2, 'data')
+            ->assertJsonFragment(['id' => $product1->id])
+            ->assertJsonFragment(['id' => $product2->id])
+            ->assertJsonMissing(['id' => $otherProduct->id]);
+    }
+
+    public function test_it_returns_empty_collection_when_category_has_no_products(): void
+    {
+        Passport::actingAs($this->admin);
+
+        $category = $this->createCategory();
+
+        $response = $this->getJson(route('products.by-categoryId', $category->id));
+
+        $response->assertStatus(200)
+            ->assertJsonCount(0, 'data');
+    }
 }
