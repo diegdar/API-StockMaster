@@ -6,12 +6,10 @@ namespace Tests\Unit\Repositories;
 use App\Models\Product;
 use App\Repositories\ProductRepository;
 use Tests\TestCase;
-use Tests\Unit\Repositories\Traits\ProductTestTrait;
-use Tests\Unit\Repositories\Traits\RepositoryTestTrait;
+use Tests\Traits\ProductTestTrait;
 
 class ProductRepositoryTest extends TestCase
 {
-    use RepositoryTestTrait;
     use ProductTestTrait;
 
     private ProductRepository $repository;
@@ -59,7 +57,7 @@ class ProductRepositoryTest extends TestCase
     public function test_create_product(array $overrides): void
     {
         $entities = $this->createProductEntities();
-        $data = $this->getProductData($entities->categoryId, $entities->supplierId, $overrides);
+        $data = $this->getProductData($entities->category->id, $entities->supplier->id, $overrides);
 
         $result = $this->repository->create($data);
 
@@ -130,8 +128,8 @@ class ProductRepositoryTest extends TestCase
     {
         $entities = $this->createProductEntities();
         $data = $this->getProductData(
-            $entities->categoryId,
-            $entities->supplierId,
+            $entities->category->id,
+            $entities->supplier->id,
             [
                 'name' => "Product with $strategy",
                 'sku' => 'SKU-' . strtoupper($strategy) . '-' . uniqid(),

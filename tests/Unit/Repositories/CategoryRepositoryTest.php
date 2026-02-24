@@ -7,11 +7,11 @@ use App\Models\Category;
 use App\Models\Product;
 use App\Repositories\CategoryRepository;
 use Tests\TestCase;
-use Tests\Unit\Repositories\Traits\RepositoryTestTrait;
+use Tests\Traits\EntityCreationTrait;
 
 class CategoryRepositoryTest extends TestCase
 {
-    use RepositoryTestTrait;
+    use EntityCreationTrait;
 
     private CategoryRepository $repository;
 

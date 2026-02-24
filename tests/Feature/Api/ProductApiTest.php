@@ -7,16 +7,14 @@ use App\Models\Inventory;
 use App\Models\Product;
 use App\Models\Warehouse;
 use Laravel\Passport\Passport;
-use Tests\Feature\Api\Traits\ApiTestUsersTrait;
-use Tests\Feature\Api\Traits\ProductApiTestTrait;
 use Tests\TestCase;
+use Tests\Traits\ApiTestUsersTrait;
 use Tests\Traits\ProductTestTrait;
 
 class ProductApiTest extends TestCase
 {
     use ApiTestUsersTrait;
     use ProductTestTrait;
-    use ProductApiTestTrait;
 
     protected function setUp(): void
     {
@@ -39,7 +37,7 @@ class ProductApiTest extends TestCase
 
         $entities = $this->createProductEntities();
 
-        $data = $this->getProductRequestData($entities->category->id, $entities->supplier->id);
+        $data = $this->getProductData($entities->category->id, $entities->supplier->id);
 
         $url = match ($routeName) {
             'products.index', 'products.store' => route($routeName),
@@ -100,7 +98,7 @@ class ProductApiTest extends TestCase
     {
         Passport::actingAs($this->admin);
 
-        $entities = $this->createProductWithInventory();
+        $entities = $this->createProductWithInventoryForDeletion();
 
         $response = $this->deleteJson(route('products.destroy', $entities->product->id));
 

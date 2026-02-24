@@ -1,12 +1,16 @@
 <?php
 declare(strict_types=1);
 
-namespace Tests\Feature\Api\Traits;
+namespace Tests\Traits;
 
 use App\Models\User;
 use Database\Seeders\RoleAndPermissionSeeder;
 use Spatie\Permission\Models\Role;
 
+/**
+ * Trait for setting up API test users with roles.
+ * Provides methods to create Admin, Worker, and Viewer users for testing.
+ */
 trait ApiTestUsersTrait
 {
     protected User $admin;
@@ -50,6 +54,10 @@ trait ApiTestUsersTrait
 
     /**
      * Get user by role name.
+     *
+     * @param string $role
+     * @return User
+     * @throws \InvalidArgumentException
      */
     protected function getUserByRole(string $role): User
     {

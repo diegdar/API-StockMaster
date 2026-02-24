@@ -15,12 +15,10 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Mockery;
 use Mockery\MockInterface;
 use Tests\TestCase;
-use Tests\Unit\Repositories\Traits\ProductTestTrait;
-use Tests\Unit\Repositories\Traits\RepositoryTestTrait;
+use Tests\Traits\ProductTestTrait;
 
 class ProductServiceTest extends TestCase
 {
-    use RepositoryTestTrait;
     use ProductTestTrait;
 
     private ProductService $service;
@@ -59,7 +57,7 @@ class ProductServiceTest extends TestCase
     public function test_create_product(array $overrides): void
     {
         $entities = $this->createProductEntities();
-        $data = $this->getProductData($entities->categoryId, $entities->supplierId, $overrides);
+        $data = $this->getProductData($entities->category->id, $entities->supplier->id, $overrides);
         $product = Product::factory()->make($data);
 
         $this->repositoryMock->shouldReceive('create')->with($data)->andReturn($product);

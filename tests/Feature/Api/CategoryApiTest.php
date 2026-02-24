@@ -6,8 +6,8 @@ namespace Tests\Feature\Api;
 use App\Models\Category;
 use App\Models\Product;
 use Laravel\Passport\Passport;
-use Tests\Feature\Api\Traits\ApiTestUsersTrait;
 use Tests\TestCase;
+use Tests\Traits\ApiTestUsersTrait;
 
 class CategoryApiTest extends TestCase
 {

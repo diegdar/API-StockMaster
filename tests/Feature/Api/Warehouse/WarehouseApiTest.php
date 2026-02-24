@@ -7,13 +7,14 @@ use App\Models\Inventory;
 use App\Models\Product;
 use App\Models\Warehouse;
 use Laravel\Passport\Passport;
-use Tests\Feature\Api\Traits\ApiTestUsersTrait;
-use Tests\Feature\Api\Traits\WarehouseTestTrait;
 use Tests\TestCase;
+use Tests\Traits\ApiTestUsersTrait;
+use Tests\Traits\WarehouseTestTrait;
 
 class WarehouseApiTest extends TestCase
 {
-    use ApiTestUsersTrait, WarehouseTestTrait;
+    use ApiTestUsersTrait;
+    use WarehouseTestTrait;
 
     protected function setUp(): void
     {
