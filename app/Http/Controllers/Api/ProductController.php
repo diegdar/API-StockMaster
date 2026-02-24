@@ -17,6 +17,7 @@ use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Validation\ValidationException;
 
 class ProductController extends Controller implements HasMiddleware
 {
@@ -34,6 +35,11 @@ class ProductController extends Controller implements HasMiddleware
         ];
     }
 
+    /**
+     * Retrieve a paginated list of products.
+     *
+     * @return AnonymousResourceCollection
+     */
     public function index(): AnonymousResourceCollection
     {
         $products = $this->productService->getAll(15);
@@ -41,6 +47,12 @@ class ProductController extends Controller implements HasMiddleware
         return ProductResource::collection($products);
     }
 
+    /**
+     * Store a newly created product.
+     *
+     * @param StoreProductRequest $request the store product request
+     * @return JsonResponse
+     */
     public function store(StoreProductRequest $request): JsonResponse
     {
         $dto = CreateProductDTO::fromArray($request->validated());
@@ -73,6 +85,15 @@ class ProductController extends Controller implements HasMiddleware
         return new ProductResource($product);
     }
 
+    /**
+     * Update a product.
+     *
+     * @param UpdateProductRequest $request
+     * @param Product $product
+     * @return JsonResponse|ProductResource
+     *
+     * @throws ValidationException if the request data is invalid
+     */
     public function update(UpdateProductRequest $request, Product $product): JsonResponse|ProductResource
     {
         $dto = UpdateProductDTO::fromArray($request->validated());
@@ -105,12 +126,20 @@ class ProductController extends Controller implements HasMiddleware
         ], 200);
     }
 
-    public function getProductsByWarehouse(Warehouse $warehouse): AnonymousResourceCollection
+    /**
+     * Get all products in a specific warehouse.
+     *
+     * @param Warehouse $warehouse The warehouse id to get products from
+     * @return AnonymousResourceCollection A collection of ProductResource
+     */
+    public function getProductsByWarehouseId(Warehouse $warehouse): AnonymousResourceCollection
     {
         $products = $this->productService->getProductsByWarehouse($warehouse);
 
         return ProductResource::collection($products);
     }
+
+
 
 
 }

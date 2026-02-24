@@ -173,7 +173,7 @@ class ProductApiTest extends TestCase
             'quantity' => 50,
         ]);
 
-        $response = $this->getJson(route('products.by-warehouse', $warehouse->id));
+        $response = $this->getJson(route('products.by-warehouseId', $warehouse->id));
 
         $response->assertStatus(200)
             ->assertJsonCount(2, 'data')
