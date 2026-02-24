@@ -9,7 +9,9 @@ use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
 use App\DTO\Product\CreateProductDTO;
 use App\DTO\Product\UpdateProductDTO;
+use App\Models\Category;
 use App\Models\Product;
+use App\Models\Supplier;
 use App\Models\Warehouse;
 use App\Services\ProductService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
@@ -135,6 +137,32 @@ class ProductController extends Controller implements HasMiddleware
     public function getProductsByWarehouseId(Warehouse $warehouse): AnonymousResourceCollection
     {
         $products = $this->productService->getProductsByWarehouse($warehouse);
+
+        return ProductResource::collection($products);
+    }
+
+    /**
+     * Retrieve a collection of products belonging to a specific supplier.
+     *
+     * @param Supplier $supplier The supplier id to get products from
+     * @return AnonymousResourceCollection A collection of ProductResource
+     */
+    public function getProductsBySupplierId(Supplier $supplier): AnonymousResourceCollection
+    {
+        $products = $this->productService->getProductsBySupplier($supplier);
+
+        return ProductResource::collection($products);
+    }
+
+        /**
+         * Retrieve a collection of products belonging to a specific category.
+         *
+         * @param category $category The category id to get products from
+         * @return AnonymousResourceCollection A collection of ProductResource
+         */
+    public function getProductsByCategoryId(Category $category): AnonymousResourceCollection
+    {
+        $products = $this->productService->getProductsByCategory($category);
 
         return ProductResource::collection($products);
     }

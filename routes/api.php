@@ -22,6 +22,8 @@ Route::middleware(['auth:api', 'throttle:api'])->group(function () {
     Route::prefix('products')->name('products.')->group(function () {
         Route::get('/sku/{product:sku}', [ProductController::class, 'showBySku'])->name('show-by-sku');
         Route::get('/warehouse/{warehouse}', [ProductController::class, 'getProductsByWarehouseId'])->name('by-warehouseId');
+        Route::get('/supplier/{supplier}', [ProductController::class, 'getProductsBySupplierId'])->name('by-supplierId');
+        Route::get('/category/{category}', [ProductController::class, 'getProductsByCategoryId'])->name('by-categoryId');
     });
 
     Route::apiResource('categories', CategoryController::class)->names('categories');
