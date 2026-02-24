@@ -3,7 +3,9 @@ declare(strict_types=1);
 
 namespace App\Repositories\Contracts;
 
+use App\Models\Category;
 use App\Models\Product;
+use App\Models\Supplier;
 use App\Models\Warehouse;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Collection as BaseCollection;
@@ -19,9 +21,9 @@ interface ProductRepositoryInterface
 
     public function getProductsByWarehouse(Warehouse $warehouse): BaseCollection;
 
-    public function getProductsBySupplier(int $supplierId): Collection;
+    public function getProductsBySupplier(Supplier $supplier): Collection;
 
-    public function getProductsByCategory(int $categoryId): Collection;
+    public function getProductsByCategory(Category  $category): Collection;
 
     public function create(array $data): Product;
 

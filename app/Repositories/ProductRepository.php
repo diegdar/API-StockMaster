@@ -3,7 +3,9 @@ declare(strict_types=1);
 
 namespace App\Repositories;
 
+use App\Models\Category;
 use App\Models\Product;
+use App\Models\Supplier;
 use App\Models\Warehouse;
 use App\Repositories\Contracts\ProductRepositoryInterface;
 use Illuminate\Database\Eloquent\Collection;
@@ -36,17 +38,17 @@ class ProductRepository implements ProductRepositoryInterface
                 ->pluck('product');
     }
 
-    public function getProductsBySupplier(int $supplierId): Collection
+  public function getProductsBySupplier(Supplier $supplier): Collection
     {
-        return Product::where('supplier_id', $supplierId)
-            ->with(['category', 'supplier', 'inventories'])
+        return $supplier->products()
+            ->with(['category', 'inventories'])
             ->get();
     }
 
-    public function getProductsByCategory(int $categoryId): Collection
+    public function getProductsByCategory(Category  $category): Collection
     {
-        return Product::where('category_id', $categoryId)
-            ->with(['category', 'supplier', 'inventories'])
+        return $category->products()
+            ->with(['supplier', 'inventories'])
             ->get();
     }
 
