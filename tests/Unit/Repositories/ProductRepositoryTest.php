@@ -87,26 +87,78 @@ class ProductRepositoryTest extends TestCase
         $this->assertNull(Product::find($product->id));
     }
 
-    public function test_get_products_by_supplier(): void
+    public function test_get_products_by_supplier_returns_correct_products(): void
     {
         $suppliers = $this->createSuppliers(2);
         $this->createProductsForSupplier($suppliers->first()->id, 3);
         $this->createProductsForSupplier($suppliers->last()->id, 2);
 
-        $result = $this->repository->getProductsBySupplier($suppliers->first()->id);
+        $result = $this->repository->getProductsBySupplier($suppliers->first());
 
         $this->assertCount(3, $result);
+        $result->each(fn ($product) => $this->assertEquals(
+            $suppliers->first()->id,
+            $product->supplier_id
+        ));
     }
 
-    public function test_get_products_by_category(): void
+    public function test_get_products_by_supplier_returns_empty_collection_when_no_products(): void
+    {
+        $supplier = $this->createSupplier();
+
+        $result = $this->repository->getProductsBySupplier($supplier);
+
+        $this->assertCount(0, $result);
+    }
+
+    public function test_get_products_by_supplier_loads_category_and_inventories_relations(): void
+    {
+        $supplier = $this->createSupplier();
+        $warehouse = $this->createWarehouse();
+        $products = $this->createProductsForSupplier($supplier->id, 2);
+        $products->each(fn ($product) => $this->createInventory($product->id, $warehouse->id, 50));
+
+        $result = $this->repository->getProductsBySupplier($supplier);
+
+        $this->assertTrue($result->first()->relationLoaded('category'));
+        $this->assertTrue($result->first()->relationLoaded('inventories'));
+    }
+
+    public function test_get_products_by_category_returns_correct_products(): void
     {
         $categories = $this->createCategories(2);
         $this->createProductsForCategory($categories->first()->id, 3);
         $this->createProductsForCategory($categories->last()->id, 2);
 
-        $result = $this->repository->getProductsByCategory($categories->first()->id);
+        $result = $this->repository->getProductsByCategory($categories->first());
 
         $this->assertCount(3, $result);
+        $result->each(fn ($product) => $this->assertEquals(
+            $categories->first()->id,
+            $product->category_id
+        ));
+    }
+
+    public function test_get_products_by_category_returns_empty_collection_when_no_products(): void
+    {
+        $category = $this->createCategory();
+
+        $result = $this->repository->getProductsByCategory($category);
+
+        $this->assertCount(0, $result);
+    }
+
+    public function test_get_products_by_category_loads_supplier_and_inventories_relations(): void
+    {
+        $category = $this->createCategory();
+        $warehouse = $this->createWarehouse();
+        $products = $this->createProductsForCategory($category->id, 2);
+        $products->each(fn ($product) => $this->createInventory($product->id, $warehouse->id, 50));
+
+        $result = $this->repository->getProductsByCategory($category);
+
+        $this->assertTrue($result->first()->relationLoaded('supplier'));
+        $this->assertTrue($result->first()->relationLoaded('inventories'));
     }
 
     public function test_get_products_by_warehouse(): void
