@@ -157,4 +157,30 @@ class CategoryApiTest extends TestCase
         $response->assertStatus(204);
         $this->assertDatabaseMissing('categories', ['id' => $category->id]);
     }
+
+    public function test_show_by_slug_returns_category(): void
+    {
+        Passport::actingAs($this->admin);
+        $category = Category::factory()->create([
+            'name' => 'Electronics',
+            'slug' => 'electronics',
+        ]);
+
+        $response = $this->getJson(route('categories.show-by-slug', $category->slug));
+
+        $response->assertStatus(200)
+            ->assertJsonFragment([
+                'name' => 'Electronics',
+                'slug' => 'electronics',
+            ]);
+    }
+
+    public function test_show_by_slug_returns_404_for_non_existent_slug(): void
+    {
+        Passport::actingAs($this->admin);
+
+        $response = $this->getJson(route('categories.show-by-slug', 'non-existent-slug'));
+
+        $response->assertStatus(404);
+    }
 }
