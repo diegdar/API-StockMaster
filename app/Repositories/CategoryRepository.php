@@ -12,17 +12,9 @@ class CategoryRepository implements CategoryRepositoryInterface
 {
     public function getAll(int $perPage = 15): LengthAwarePaginator
     {
-        return Category::paginate($perPage);
-    }
-
-    public function findById(int $id): ?Category
-    {
-        return Category::find($id);
-    }
-
-    public function findBySlug(string $slug): ?Category
-    {
-        return Category::where('slug', $slug)->first();
+        return Category::query()
+            ->withCount('products')
+            ->paginate($perPage);
     }
 
     public function getCategoriesWithProductCount(): Collection
