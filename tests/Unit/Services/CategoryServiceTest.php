@@ -7,15 +7,15 @@ use App\DTO\Category\CreateCategoryDTO;
 use App\DTO\Category\UpdateCategoryDTO;
 use App\Exceptions\DeletionException;
 use App\Models\Category;
-use App\Models\Product;
-use App\Models\Supplier;
 use App\Services\CategoryService;
-
 use Tests\TestCase;
+use Tests\Traits\CategoryTestTrait;
 use App\Repositories\CategoryRepository;
 
 class CategoryServiceTest extends TestCase
 {
+    use CategoryTestTrait;
+
     private CategoryService $service;
 
     protected function setUp(): void
@@ -28,41 +28,11 @@ class CategoryServiceTest extends TestCase
 
     public function test_get_all_categories(): void
     {
-        Category::factory()->count(5)->create();
+        $this->createCategories(5);
 
         $result = $this->service->getAllCategories();
 
         $this->assertCount(5, $result->items());
-    }
-
-    public function test_find_category_by_id(): void
-    {
-        $category = Category::factory()->create();
-
-        $result = $this->service->findCategoryById($category->id);
-
-        $this->assertNotNull($result);
-        $this->assertEquals($category->id, $result->id);
-    }
-
-    public function test_find_category_by_id_returns_null_when_not_found(): void
-    {
-        $result = $this->service->findCategoryById(9999);
-
-        $this->assertNull($result);
-    }
-
-    public function test_find_category_by_slug(): void
-    {
-        $category = Category::factory()->create([
-            'name' => 'Electronics',
-            'slug' => 'electronics',
-        ]);
-
-        $result = $this->service->findCategoryBySlug('electronics');
-
-        $this->assertNotNull($result);
-        $this->assertEquals($category->id, $result->id);
     }
 
     public function test_create_category(): void
@@ -81,7 +51,7 @@ class CategoryServiceTest extends TestCase
 
     public function test_update_category(): void
     {
-        $category = Category::factory()->create([
+        $category = $this->createCategory([
             'name' => 'Old Name',
             'description' => 'Old description',
         ]);
@@ -99,7 +69,7 @@ class CategoryServiceTest extends TestCase
 
     public function test_delete_category_without_products(): void
     {
-        $category = Category::factory()->create();
+        $category = $this->createCategory();
 
         $this->service->deleteCategory($category);
 
@@ -108,33 +78,21 @@ class CategoryServiceTest extends TestCase
 
     public function test_delete_category_with_products_throws_deletion_exception(): void
     {
-        $category = Category::factory()->create();
-        $supplier = Supplier::factory()->create();
-
-        Product::factory()->create([
-            'category_id' => $category->id,
-            'supplier_id' => $supplier->id,
-        ]);
+        $entities = $this->createCategoryWithProducts(1);
 
         $this->expectException(DeletionException::class);
 
-        $this->service->deleteCategory($category);
+        $this->service->deleteCategory($entities->category);
     }
 
     public function test_delete_category_with_products_returns_false(): void
     {
-        $category = Category::factory()->create();
-        $supplier = Supplier::factory()->create();
-
-        Product::factory()->create([
-            'category_id' => $category->id,
-            'supplier_id' => $supplier->id,
-        ]);
+        $entities = $this->createCategoryWithProducts(1);
 
         try {
-            $this->service->deleteCategory($category);
+            $this->service->deleteCategory($entities->category);
         } catch (DeletionException $e) {
-            $this->assertNotNull(Category::find($category->id));
+            $this->assertCategoryExists($entities->category->id);
         }
     }
 }

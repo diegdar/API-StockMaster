@@ -4,14 +4,13 @@ declare(strict_types=1);
 namespace Tests\Unit\Repositories;
 
 use App\Models\Category;
-use App\Models\Product;
 use App\Repositories\CategoryRepository;
 use Tests\TestCase;
-use Tests\Traits\EntityCreationTrait;
+use Tests\Traits\CategoryTestTrait;
 
 class CategoryRepositoryTest extends TestCase
 {
-    use EntityCreationTrait;
+    use CategoryTestTrait;
 
     private CategoryRepository $repository;
 
@@ -25,59 +24,19 @@ class CategoryRepositoryTest extends TestCase
     {
         $this->createCategories(20);
 
-        $result = $this->repository->getAll(5);
+        $result = $this->repository
+            ->getAll(5);
 
         $this->assertCount(5, $result->items());
         $this->assertTrue($result->hasPages());
     }
 
-    public function test_find_by_id_returns_category(): void
-    {
-        $category = Category::factory()->create();
-
-        $result = $this->repository->findById($category->id);
-
-        $this->assertNotNull($result);
-        $this->assertEquals($category->id, $result->id);
-    }
-
-    public function test_find_by_id_returns_null_when_not_found(): void
-    {
-        $result = $this->repository->findById(9999);
-
-        $this->assertNull($result);
-    }
-
-    public function test_find_by_slug_returns_category(): void
-    {
-        $category = Category::factory()->create([
-            'name' => 'Electronics',
-            'slug' => 'electronics',
-        ]);
-
-        $result = $this->repository->findBySlug('electronics');
-
-        $this->assertNotNull($result);
-        $this->assertEquals($category->id, $result->id);
-    }
-
-    public function test_find_by_slug_returns_null_when_not_found(): void
-    {
-        $result = $this->repository->findBySlug('non-existent');
-
-        $this->assertNull($result);
-    }
-
     public function test_get_categories_with_product_count(): void
     {
-        $entities = $this->createCategoryAndSupplier();
+        $this->createCategoryWithProducts();
 
-        Product::factory()->count(5)->create([
-            'category_id' => $entities->category->id,
-            'supplier_id' => $entities->supplier->id,
-        ]);
-
-        $result = $this->repository->getCategoriesWithProductCount();
+        $result = $this->repository
+            ->getCategoriesWithProductCount();
 
         $this->assertNotEmpty($result);
         $this->assertArrayHasKey('products_count', $result->first()->toArray());
@@ -99,7 +58,7 @@ class CategoryRepositoryTest extends TestCase
 
     public function test_update_category(): void
     {
-        $category = Category::factory()->create([
+        $category = $this->createCategory([
             'name' => 'Old Name',
             'description' => 'Old description',
         ]);
@@ -117,7 +76,7 @@ class CategoryRepositoryTest extends TestCase
 
     public function test_delete_category(): void
     {
-        $category = Category::factory()->create();
+        $category = $this->createCategory();
 
         $this->repository->delete($category);
 

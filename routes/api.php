@@ -17,6 +17,7 @@ Route::middleware(['auth:api', 'throttle:api'])->group(function () {
         return $request->user();
     })->name('user.profile');
 
+// PRODUCTS
     Route::apiResource('products', ProductController::class)->names('products');
     // Product custom routes (must be before apiResource)
     Route::prefix('products')->name('products.')->group(function () {
@@ -26,8 +27,13 @@ Route::middleware(['auth:api', 'throttle:api'])->group(function () {
         Route::get('/category/{category}', [ProductController::class, 'getProductsByCategoryId'])->name('by-categoryId');
     });
 
+// CATEGORIES
     Route::apiResource('categories', CategoryController::class)->names('categories');
+    Route::prefix('categories')->name('categories.')->group(function () {
+        Route::get('/slug/{category:slug}', [CategoryController::class, 'showBySlug'])->name('show-by-slug');
+    });
 
+// WAREHOUSES
     // Warehouse custom routes (must be before apiResource)
     Route::prefix('warehouses')->name('warehouses.')->group(function () {
         Route::get('/', [WarehouseController::class, 'listWarehouses'])->name('warehouses.index');

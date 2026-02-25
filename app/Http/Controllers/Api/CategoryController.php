@@ -34,14 +34,26 @@ class CategoryController extends Controller implements HasMiddleware
         ];
     }
 
+    /**
+     * Retrieve a paginated list of categories.
+     *
+     * @return AnonymousResourceCollection
+     */
     public function index(): AnonymousResourceCollection
     {
         $categories = $this->categoryService->getAllCategories();
-        $categories->loadCount('products');
 
         return CategoryResource::collection($categories);
     }
 
+    /**
+     * Create a new category
+     *
+     * @param StoreCategoryRequest $request
+     * @return JsonResponse
+     *
+     * @throws \Illuminate\Auth\Access\AuthorizationException
+     */
     public function store(StoreCategoryRequest $request): JsonResponse
     {
         $dto = CreateCategoryDTO::fromArray($request->validated());
@@ -53,6 +65,12 @@ class CategoryController extends Controller implements HasMiddleware
         ], 201);
     }
 
+    /**
+     * Show a category with its products count.
+     *
+     * @param Category $category
+     * @return CategoryResource
+     */
     public function show(Category $category): CategoryResource
     {
         $category->loadCount('products');
@@ -60,21 +78,58 @@ class CategoryController extends Controller implements HasMiddleware
         return new CategoryResource($category);
     }
 
-    public function update(UpdateCategoryRequest $request, Category $category): CategoryResource
+    /**
+     * Show a category by its slug.
+     *
+     * @param Category $category
+     * @return CategoryResource
+     */
+    public function showBySlug(Category $category): CategoryResource
     {
-        $dto = UpdateCategoryDTO::fromArray($request->validated());
-
-        $category = $this->categoryService->updateCategory($category, $dto);
-
         return new CategoryResource($category);
     }
 
+    /**
+     * Update a category.
+     *
+     * @param UpdateCategoryRequest $request
+     * @param Category $category
+     * @return CategoryResource
+     *
+     * @throws \Illuminate\Auth\Access\AuthorizationException
+     */
+    public function update(UpdateCategoryRequest $request, Category $category): JsonResponse |CategoryResource
+    {
+        $dto = UpdateCategoryDTO::fromArray($request->validated());
+
+        if (!$dto->hasAnyField()) {
+            return response()->json([
+                'message' => 'No fields to update',
+            ], 422);
+        }
+
+        $category = $this->categoryService->updateCategory($category, $dto);
+
+        return response()->json([
+            'message' => "The Category '{$category->name}' has been updated successfully",
+            'data' => new CategoryResource($category),
+        ], 200);
+    }
+
+    /**
+     * Delete a category.
+     *
+     * @param Category $category
+     * @return JsonResponse
+     *
+     * @throws \Illuminate\Auth\Access\AuthorizationException
+     */
     public function destroy(Category $category): JsonResponse
     {
         $this->categoryService->deleteCategory($category);
 
         return response()->json([
             'message' => "The Category has been deleted successfully",
-        ], 204);
+        ], 200);
     }
 }
