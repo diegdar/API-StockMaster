@@ -7,7 +7,6 @@ use App\Models\Inventory;
 use App\Models\Product;
 use App\Models\RestockAlert;
 use App\Models\StockMovement;
-use Illuminate\Testing\Fluent\AssertableJson;
 
 /**
  * Trait for product-related test helpers.
