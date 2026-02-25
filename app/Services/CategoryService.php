@@ -21,16 +21,6 @@ class CategoryService
         return $this->repository->getAll($perPage);
     }
 
-    public function findCategoryById(int $id): ?Category
-    {
-        return $this->repository->findById($id);
-    }
-
-    public function findCategoryBySlug(string $slug): ?Category
-    {
-        return $this->repository->findBySlug($slug);
-    }
-
     public function createCategory(CreateCategoryDTO $dto): Category
     {
         return $this->repository->create($dto->toArray());
