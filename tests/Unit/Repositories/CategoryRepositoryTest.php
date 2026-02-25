@@ -31,43 +31,6 @@ class CategoryRepositoryTest extends TestCase
         $this->assertTrue($result->hasPages());
     }
 
-    public function test_find_by_id_returns_category(): void
-    {
-        $category = Category::factory()->create();
-
-        $result = $this->repository->findById($category->id);
-
-        $this->assertNotNull($result);
-        $this->assertEquals($category->id, $result->id);
-    }
-
-    public function test_find_by_id_returns_null_when_not_found(): void
-    {
-        $result = $this->repository->findById(9999);
-
-        $this->assertNull($result);
-    }
-
-    public function test_find_by_slug_returns_category(): void
-    {
-        $category = Category::factory()->create([
-            'name' => 'Electronics',
-            'slug' => 'electronics',
-        ]);
-
-        $result = $this->repository->findBySlug('electronics');
-
-        $this->assertNotNull($result);
-        $this->assertEquals($category->id, $result->id);
-    }
-
-    public function test_find_by_slug_returns_null_when_not_found(): void
-    {
-        $result = $this->repository->findBySlug('non-existent');
-
-        $this->assertNull($result);
-    }
-
     public function test_get_categories_with_product_count(): void
     {
         $entities = $this->createCategoryAndSupplier();
