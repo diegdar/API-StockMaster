@@ -110,6 +110,7 @@ class ProductController extends Controller implements HasMiddleware
 
         return response()->json([
             'message' => "The Product '{$updatedProduct->name}' has been updated successfully",
+            'data' => new ProductResource($updatedProduct),
         ], 200);
     }
 

@@ -98,13 +98,22 @@ class CategoryController extends Controller implements HasMiddleware
      *
      * @throws \Illuminate\Auth\Access\AuthorizationException
      */
-    public function update(UpdateCategoryRequest $request, Category $category): CategoryResource
+    public function update(UpdateCategoryRequest $request, Category $category): JsonResponse |CategoryResource
     {
         $dto = UpdateCategoryDTO::fromArray($request->validated());
 
+        if (!$dto->hasAnyField()) {
+            return response()->json([
+                'message' => 'No fields to update',
+            ], 422);
+        }
+
         $category = $this->categoryService->updateCategory($category, $dto);
 
-        return new CategoryResource($category);
+        return response()->json([
+            'message' => "The Category '{$category->name}' has been updated successfully",
+            'data' => new CategoryResource($category),
+        ], 200);
     }
 
     /**
@@ -121,6 +130,6 @@ class CategoryController extends Controller implements HasMiddleware
 
         return response()->json([
             'message' => "The Category has been deleted successfully",
-        ], 204);
+        ], 200);
     }
 }
