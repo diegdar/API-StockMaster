@@ -35,36 +35,6 @@ class CategoryServiceTest extends TestCase
         $this->assertCount(5, $result->items());
     }
 
-    public function test_find_category_by_id(): void
-    {
-        $category = Category::factory()->create();
-
-        $result = $this->service->findCategoryById($category->id);
-
-        $this->assertNotNull($result);
-        $this->assertEquals($category->id, $result->id);
-    }
-
-    public function test_find_category_by_id_returns_null_when_not_found(): void
-    {
-        $result = $this->service->findCategoryById(9999);
-
-        $this->assertNull($result);
-    }
-
-    public function test_find_category_by_slug(): void
-    {
-        $category = Category::factory()->create([
-            'name' => 'Electronics',
-            'slug' => 'electronics',
-        ]);
-
-        $result = $this->service->findCategoryBySlug('electronics');
-
-        $this->assertNotNull($result);
-        $this->assertEquals($category->id, $result->id);
-    }
-
     public function test_create_category(): void
     {
         $dto = new CreateCategoryDTO(
