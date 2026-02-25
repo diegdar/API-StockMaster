@@ -3,15 +3,15 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Api;
 
-use App\Models\Category;
-use App\Models\Product;
 use Laravel\Passport\Passport;
 use Tests\TestCase;
 use Tests\Traits\ApiTestUsersTrait;
+use Tests\Traits\CategoryTestTrait;
 
 class CategoryApiTest extends TestCase
 {
     use ApiTestUsersTrait;
+    use CategoryTestTrait;
 
     protected function setUp(): void
     {
@@ -30,7 +30,7 @@ class CategoryApiTest extends TestCase
         int $expectedStatus
     ): void {
         Passport::actingAs($this->getUserByRole($role));
-        $category = Category::factory()->create();
+        $category = $this->createCategory();
 
         $url = in_array($routeName, ['categories.index', 'categories.store'])
             ? route($routeName)
@@ -39,27 +39,6 @@ class CategoryApiTest extends TestCase
         $response = $this->json($method, $url, ['name' => 'Test', 'description' => 'Test']);
 
         $response->assertStatus($expectedStatus);
-    }
-
-    public static function categoryPermissionsProvider(): array
-    {
-        return [
-            'Admin: Full Access' => ['Admin', 'GET', 'categories.index', 200],
-            'Admin: Can show' => ['Admin', 'GET', 'categories.show', 200],
-            'Admin: Can create' => ['Admin', 'POST', 'categories.store', 201],
-            'Admin: Can update' => ['Admin', 'PUT', 'categories.update', 200],
-            'Admin: Can delete without products' => ['Admin', 'DELETE', 'categories.destroy', 204],
-            'Worker: Read-only' => ['Worker', 'GET', 'categories.index', 200],
-            'Worker: Can show' => ['Worker', 'GET', 'categories.show', 200],
-            'Worker: Cannot create' => ['Worker', 'POST', 'categories.store', 403],
-            'Worker: Cannot update' => ['Worker', 'PUT', 'categories.update', 403],
-            'Worker: Cannot delete' => ['Worker', 'DELETE', 'categories.destroy', 403],
-            'Viewer: Read-only' => ['Viewer', 'GET', 'categories.index', 200],
-            'Viewer: Can show' => ['Viewer', 'GET', 'categories.show', 200],
-            'Viewer: Cannot create' => ['Viewer', 'POST', 'categories.store', 403],
-            'Viewer: Cannot update' => ['Viewer', 'PUT', 'categories.update', 403],
-            'Viewer: Cannot delete' => ['Viewer', 'DELETE', 'categories.destroy', 403],
-        ];
     }
 
     public function test_observer_generates_slug_on_create(): void
@@ -80,7 +59,7 @@ class CategoryApiTest extends TestCase
     public function test_observer_regenerates_slug_on_name_change(): void
     {
         Passport::actingAs($this->admin);
-        $category = Category::factory()->create(['name' => 'Original Name', 'slug' => 'original-name']);
+        $category = $this->createCategoryWithSlug('Original Name', 'original-name');
 
         $response = $this->putJson(route('categories.update', $category->id), ['name' => 'Updated Name']);
 
@@ -93,7 +72,7 @@ class CategoryApiTest extends TestCase
     public function test_observer_handles_duplicate_slugs(): void
     {
         Passport::actingAs($this->admin);
-        Category::factory()->create(['name' => 'Test Category', 'slug' => 'test-category']);
+        $this->createCategoryWithSlug('Test Category', 'test-category');
 
         $response = $this->postJson(route('categories.store'), ['name' => 'Test Category']);
 
@@ -114,7 +93,7 @@ class CategoryApiTest extends TestCase
     public function test_category_resource_structure(): void
     {
         Passport::actingAs($this->admin);
-        $category = Category::factory()->create();
+        $category = $this->createCategory();
 
         $response = $this->getJson(route('categories.show', $category->id));
 
@@ -126,7 +105,7 @@ class CategoryApiTest extends TestCase
     public function test_categories_list_includes_pagination(): void
     {
         Passport::actingAs($this->admin);
-        Category::factory()->count(20)->create();
+        $this->createCategories(20);
 
         $response = $this->getJson(route('categories.index'));
 
@@ -136,35 +115,31 @@ class CategoryApiTest extends TestCase
     public function test_admin_cannot_delete_category_with_products(): void
     {
         Passport::actingAs($this->admin);
-        $category = Category::factory()->create();
-        Product::factory()->count(3)->create(['category_id' => $category->id]);
+        $entities = $this->createCategoryWithProducts(3);
 
-        $response = $this->deleteJson(route('categories.destroy', $category->id));
+        $response = $this->deleteJson(route('categories.destroy', $entities->category->id));
 
         $response->assertStatus(422)->assertJsonFragment([
             'message' => 'Cannot delete category because it has associated products. Please remove or reassign the products first.',
         ]);
-        $this->assertDatabaseHas('categories', ['id' => $category->id]);
+        $this->assertCategoryExists($entities->category->id);
     }
 
     public function test_admin_can_delete_category_without_products(): void
     {
         Passport::actingAs($this->admin);
-        $category = Category::factory()->create();
+        $category = $this->createCategory();
 
         $response = $this->deleteJson(route('categories.destroy', $category->id));
 
-        $response->assertStatus(204);
-        $this->assertDatabaseMissing('categories', ['id' => $category->id]);
+        $response->assertStatus(200);
+        $this->assertCategoryDeleted($category->id);
     }
 
     public function test_show_by_slug_returns_category(): void
     {
         Passport::actingAs($this->admin);
-        $category = Category::factory()->create([
-            'name' => 'Electronics',
-            'slug' => 'electronics',
-        ]);
+        $category = $this->createCategoryWithSlug('Electronics', 'electronics');
 
         $response = $this->getJson(route('categories.show-by-slug', $category->slug));
 

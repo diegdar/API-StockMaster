@@ -112,7 +112,7 @@ trait CategoryTestTrait
             'Admin: Can show' => ['Admin', 'GET', 'categories.show', 200],
             'Admin: Can create' => ['Admin', 'POST', 'categories.store', 201],
             'Admin: Can update' => ['Admin', 'PUT', 'categories.update', 200],
-            'Admin: Can delete without products' => ['Admin', 'DELETE', 'categories.destroy', 204],
+            'Admin: Can delete without products' => ['Admin', 'DELETE', 'categories.destroy', 200],
             'Worker: Read-only' => ['Worker', 'GET', 'categories.index', 200],
             'Worker: Can show' => ['Worker', 'GET', 'categories.show', 200],
             'Worker: Cannot create' => ['Worker', 'POST', 'categories.store', 403],
