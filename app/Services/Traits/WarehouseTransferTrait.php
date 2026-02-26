@@ -71,7 +71,7 @@ trait WarehouseTransferTrait
      */
     private function validateDestinationCapacity(int $warehouseId, int $quantity): void
     {
-        $availableCapacity = $this->repository->getAvailableCapacity($warehouseId);
+        $availableCapacity = $this->getAvailableCapacity($warehouseId);
 
         // If null, warehouse has no capacity limit
         if ($availableCapacity === null) {
@@ -81,6 +81,20 @@ trait WarehouseTransferTrait
         if ($availableCapacity < $quantity) {
             throw new InsufficientCapacityException($availableCapacity, $quantity);
         }
+    }
+
+    public function getAvailableCapacity(int $warehouseId): ?int
+    {
+        $warehouse = $this->repository->findById($warehouseId);
+
+        if (is_null($warehouse?->capacity)) {
+            return null;
+        }
+
+        $usedCapacity = $this->repository
+                        ->getUsedCapacity($warehouse);
+
+        return max(0, $warehouse->capacity - $usedCapacity);
     }
 
     /**
