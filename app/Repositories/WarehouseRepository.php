@@ -47,15 +47,6 @@ class WarehouseRepository implements WarehouseRepositoryInterface
     }
 
     /**
-     * Get all warehouses information.
-     */
-    public function getAllWarehouses(): Collection
-    {
-        return Warehouse::orderBy('name')
-                ->get();
-    }
-
-    /**
      * Get all warehouses with inventory count.
      */
     public function getWarehousesWithInventoryCount(): Collection

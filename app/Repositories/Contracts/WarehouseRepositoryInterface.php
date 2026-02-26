@@ -30,11 +30,6 @@ interface WarehouseRepositoryInterface
     public function delete(Warehouse $warehouse): void;
 
     /**
-     * Get all warehouses information.
-     */
-    public function getAllWarehouses(): Collection;
-
-    /**
      * Get all warehouses with inventory count.
      */
     public function getWarehousesWithInventoryCount(): Collection;
