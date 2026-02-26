@@ -36,11 +36,10 @@ Route::middleware(['auth:api', 'throttle:api'])->group(function () {
 // WAREHOUSES
     // Warehouse custom routes (must be before apiResource)
     Route::prefix('warehouses')->name('warehouses.')->group(function () {
-        Route::get('/', [WarehouseController::class, 'listWarehouses'])->name('warehouses.index');
-        Route::get('/with-capacity', [WarehouseController::class, 'listWarehousesWithCapacity'])->name('warehouses.with-capacity');
-        Route::get('/with-inventory-count', [WarehouseController::class, 'listWarehousesWithInventory'])->name('warehouses.with-inventory-count');
-        Route::get('/slug/{warehouse:slug}', [WarehouseController::class, 'showBySlug'])->name('warehouses.show-by-slug');
-        Route::get('/{warehouse}/capacity', [WarehouseController::class, 'capacity'])->name('warehouses.capacity');
+        Route::get('/with-capacity', [WarehouseController::class, 'listWarehousesWithCapacity'])->name('with-capacity');
+        Route::get('/with-inventory-count', [WarehouseController::class, 'listWarehousesWithInventory'])->name('with-inventory-count');
+        Route::get('/slug/{warehouse:slug}', [WarehouseController::class, 'showBySlug'])->name('show-by-slug');
+        Route::get('/{warehouse}/capacity', [WarehouseController::class, 'capacity'])->name('capacity');
         Route::post('/transfer', [WarehouseController::class, 'transfer'])->name('transfer');
     });
 

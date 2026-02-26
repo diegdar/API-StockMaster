@@ -101,20 +101,6 @@ class WarehouseServiceTest extends TestCase
         $this->assertEquals('updated-name', $result->slug);
     }
 
-    public function test_get_all_warehouses(): void
-    {
-        Warehouse::factory()->create(['name' => 'Warehouse A', 'capacity' => 50000]);
-        Warehouse::factory()->create(['name' => 'Warehouse B', 'capacity' => 30000]);
-        Warehouse::factory()->create(['name' => 'Warehouse No Capacity', 'capacity' => null]);
-
-        $result = $this->service->getAllWarehouses();
-
-        $this->assertCount(3, $result);
-        $this->assertTrue($result->contains('name', 'Warehouse A'));
-        $this->assertTrue($result->contains('name', 'Warehouse B'));
-        $this->assertTrue($result->contains('name', 'Warehouse No Capacity'));
-    }
-
     public function test_get_warehouses_with_inventory_count(): void
     {
         $warehouse1 = Warehouse::factory()->create();

@@ -29,7 +29,7 @@ class WarehouseService
     ) {}
 
     /**
-     * Get all warehouses with pagination.
+     * List all warehouses with theris inventory.
      */
     public function getAll(int $perPage = 15): LengthAwarePaginator
     {
@@ -64,14 +64,6 @@ class WarehouseService
         }
 
         $this->repository->delete($warehouse);
-    }
-
-    /**
-     * Get all warehouses information.
-     */
-    public function getAllWarehouses(): Collection
-    {
-        return $this->repository->getAllWarehouses();
     }
 
     /**

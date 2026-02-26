@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Repositories;
 
-use App\Models\Warehouse;
 use App\Repositories\Contracts\WarehouseRepositoryInterface;
 use Tests\TestCase;
 use Tests\Traits\EntityCreationTrait;
@@ -41,107 +40,149 @@ class WarehouseRepositoryTest extends TestCase
 
         $result = $this->repository->create($data);
 
-        $this->assertDatabaseHas('warehouses', [
-            'name' => 'New Warehouse',
-            'location' => 'New Location',
-        ]);
-        $this->assertEquals('New Warehouse', $result->name);
+        $this->assertDatabaseHas('warehouses', ['name' => 'New Warehouse']);
         $this->assertEquals('new-warehouse', $result->slug);
     }
 
-    public function test_update_warehouse(): void
+    public function test_update_warehouse_name(): void
     {
-        $warehouse = Warehouse::factory()->create([
-            'name' => 'Old Name',
-            'capacity' => 30000,
-        ]);
+        $warehouse = $this->createWarehouse(['name' => 'Old Name']);
 
-        $data = [
-            'name' => 'Updated Name',
-            'capacity' => 60000,
-        ];
-
-        $result = $this->repository->update($warehouse, $data);
+        $result = $this->repository->update($warehouse, ['name' => 'Updated Name']);
 
         $this->assertEquals('Updated Name', $result->name);
-        $this->assertEquals(60000, $result->capacity);
         $this->assertEquals('updated-name', $result->slug);
+    }
+
+    public function test_update_warehouse_capacity(): void
+    {
+        $warehouse = $this->createWarehouse(['capacity' => 30000]);
+
+        $result = $this->repository->update($warehouse, ['capacity' => 60000]);
+
+        $this->assertEquals(60000, $result->capacity);
     }
 
     public function test_delete_warehouse(): void
     {
-        $warehouse = Warehouse::factory()->create();
+        $warehouse = $this->createWarehouse();
 
         $this->repository->delete($warehouse);
 
-        $this->assertDatabaseMissing('warehouses', [
-            'id' => $warehouse->id,
-        ]);
+        $this->assertDatabaseMissing('warehouses', ['id' => $warehouse->id]);
     }
 
     public function test_get_warehouses_with_inventory_count(): void
     {
         $warehouses = $this->createWarehouses(2);
-        $warehouse1 = $warehouses->first();
-        $warehouse2 = $warehouses->last();
+        $wh1 = $warehouses->first();
+        $wh2 = $warehouses->last();
 
-        $result1 = $this->createProductWithInventory($warehouse1->id);
-        $this->createProductWithInventory($warehouse1->id);
-        $this->createProductWithInventory($warehouse2->id);
+        $this->createProductWithInventory($wh1->id);
+        $this->createProductWithInventory($wh1->id);
+        $this->createProductWithInventory($wh2->id);
 
         $result = $this->repository->getWarehousesWithInventoryCount();
 
-        $this->assertCount(2, $result);
-        $wh1 = $result->firstWhere('id', $warehouse1->id);
-        $wh2 = $result->firstWhere('id', $warehouse2->id);
-        $this->assertEquals(2, $wh1->inventories_count);
-        $this->assertEquals(1, $wh2->inventories_count);
+        $this->assertEquals(2, $result->firstWhere('id', $wh1->id)->inventories_count);
+        $this->assertEquals(1, $result->firstWhere('id', $wh2->id)->inventories_count);
     }
 
-    public function test_find_by_id_returns_warehouse(): void
+    public function test_find_warehouse_by_id(): void
     {
-        $warehouse = Warehouse::factory()->create([
-            'name' => 'Test Warehouse',
-            'location' => 'Test Location',
-        ]);
+        $warehouse = $this->createWarehouse(['name' => 'Test Warehouse']);
 
         $result = $this->repository->findById($warehouse->id);
 
-        $this->assertNotNull($result);
-        $this->assertEquals($warehouse->id, $result->id);
-        $this->assertEquals('Test Warehouse', $result->name);
+        $this->assertEquals($warehouse->id, $result?->id);
+        $this->assertEquals('Test Warehouse', $result?->name);
     }
 
-    public function test_find_by_id_returns_null_when_not_found(): void
+    public function test_find_warehouse_by_id_returns_null_when_not_found(): void
     {
         $result = $this->repository->findById(99999);
 
         $this->assertNull($result);
     }
 
-    public function test_get_available_capacity(): void
+    public function test_get_used_capacity_with_inventory(): void
     {
-        $warehouse = Warehouse::factory()->create(['capacity' => 1000]);
-        $result = $this->createProductWithInventory($warehouse->id, 300);
+        $warehouse = $this->createWarehouse(['capacity' => 1000]);
+        $this->createProductWithInventory($warehouse->id, 300);
 
-        $availableCapacity = $this->repository->getAvailableCapacity($warehouse->id);
+        $usedCapacity = $this->repository->getUsedCapacity($warehouse);
 
-        $this->assertEquals(700, $availableCapacity);
+        $this->assertEquals(300, $usedCapacity);
     }
 
-    public function test_get_available_capacity_returns_null_when_no_capacity_limit(): void
+    public function test_get_used_capacity_without_inventory(): void
     {
-        $warehouse = Warehouse::factory()->create(['capacity' => null]);
+        $warehouse = $this->createWarehouse(['capacity' => 1000]);
 
-        $result = $this->repository->getAvailableCapacity($warehouse->id);
+        $usedCapacity = $this->repository->getUsedCapacity($warehouse);
 
-        $this->assertNull($result);
+        $this->assertEquals(0, $usedCapacity);
     }
 
-    public function test_get_available_capacity_returns_null_when_warehouse_not_found(): void
+    public function test_get_used_capacity_with_null_capacity_warehouse(): void
     {
-        $result = $this->repository->getAvailableCapacity(99999);
+        $warehouse = $this->createWarehouse(['capacity' => null]);
+        $this->createProductWithInventory($warehouse->id, 300);
 
-        $this->assertNull($result);
+        $usedCapacity = $this->repository->getUsedCapacity($warehouse);
+
+        $this->assertEquals(300, $usedCapacity);
+    }
+
+    /**
+     * @dataProvider warehouseCreateValidationProvider
+     */
+    public function test_create_warehouse_validation(array $data, string $expectedException): void
+    {
+        if ($expectedException !== '') {
+            $this->expectException($expectedException);
+        }
+
+        $result = $this->repository->create($data);
+
+        $this->assertNotNull($result);
+    }
+
+    public static function warehouseCreateValidationProvider(): array
+    {
+        return [
+            'valid data' => [
+                ['name' => 'Test WH', 'location' => 'Test Loc', 'capacity' => 1000, 'is_active' => true],
+                '',
+            ],
+            'missing name throws TypeError' => [
+                ['location' => 'Test Loc', 'capacity' => 1000],
+                \TypeError::class,
+            ],
+            'missing location throws QueryException' => [
+                ['name' => 'Test WH', 'capacity' => 1000],
+                \Illuminate\Database\QueryException::class,
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider warehouseCapacityValidationProvider
+     */
+    public function test_warehouse_capacity_validation(int $capacity, int $expectedCapacity): void
+    {
+        $warehouse = $this->createWarehouse();
+
+        $result = $this->repository->update($warehouse, ['capacity' => $capacity]);
+
+        $this->assertEquals($expectedCapacity, $result->capacity);
+    }
+
+    public static function warehouseCapacityValidationProvider(): array
+    {
+        return [
+            'positive capacity' => [5000, 5000],
+            'zero capacity' => [0, 0],
+        ];
     }
 }

@@ -252,6 +252,7 @@
         "/categories": {
             "get": {
                 "operationId": "categories.index",
+                "summary": "Retrieve a paginated list of categories",
                 "tags": [
                     "Category"
                 ],
@@ -284,6 +285,7 @@
             },
             "post": {
                 "operationId": "categories.store",
+                "summary": "Create a new category",
                 "tags": [
                     "Category"
                 ],
@@ -320,6 +322,9 @@
                             }
                         }
                     },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    },
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
                     },
@@ -332,6 +337,7 @@
         "/categories/{category}": {
             "get": {
                 "operationId": "categories.show",
+                "summary": "Show a category with its products count",
                 "tags": [
                     "Category"
                 ],
@@ -375,6 +381,7 @@
             },
             "put": {
                 "operationId": "categories.update",
+                "summary": "Update a category",
                 "tags": [
                     "Category"
                 ],
@@ -418,6 +425,9 @@
                             }
                         }
                     },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    },
                     "404": {
                         "$ref": "#/components/responses/ModelNotFoundException"
                     },
@@ -431,6 +441,7 @@
             },
             "delete": {
                 "operationId": "categories.destroy",
+                "summary": "Delete a category",
                 "tags": [
                     "Category"
                 ],
@@ -446,8 +457,8 @@
                     }
                 ],
                 "responses": {
-                    "204": {
-                        "description": "No content",
+                    "200": {
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -462,6 +473,55 @@
                                     },
                                     "required": [
                                         "message"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/categories/slug/{category}": {
+            "get": {
+                "operationId": "categories.show-by-slug",
+                "summary": "Show a category by its slug",
+                "tags": [
+                    "Category"
+                ],
+                "parameters": [
+                    {
+                        "name": "category",
+                        "in": "path",
+                        "required": true,
+                        "description": "The category slug",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "`CategoryResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/CategoryResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
                                     ]
                                 }
                             }
@@ -753,10 +813,14 @@
                                     "properties": {
                                         "message": {
                                             "type": "string"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/ProductResource"
                                         }
                                     },
                                     "required": [
-                                        "message"
+                                        "message",
+                                        "data"
                                     ]
                                 }
                             }
@@ -1014,92 +1078,10 @@
                 }
             }
         },
-        "/warehouses": {
-            "get": {
-                "operationId": "warehouses.index",
-                "summary": "Display a listing of warehouses",
-                "tags": [
-                    "Warehouse"
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Array of `WarehouseResource`",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/components/schemas/WarehouseResource"
-                                            }
-                                        }
-                                    },
-                                    "required": [
-                                        "data"
-                                    ]
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    }
-                }
-            },
-            "post": {
-                "operationId": "warehouses.store",
-                "summary": "Store a newly created warehouse",
-                "tags": [
-                    "Warehouse"
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/StoreWarehouseRequest"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "message": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "$ref": "#/components/schemas/WarehouseResource"
-                                        }
-                                    },
-                                    "required": [
-                                        "message",
-                                        "data"
-                                    ]
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    },
-                    "422": {
-                        "$ref": "#/components/responses/ValidationException"
-                    }
-                }
-            }
-        },
         "/warehouses/with-capacity": {
             "get": {
-                "operationId": "warehouses.warehouses.with-capacity",
-                "summary": "Retrieve a list of all warehouses including their capacity metrics",
+                "operationId": "warehouses.with-capacity",
+                "summary": "List warehouses with capacity metrics",
                 "tags": [
                     "Warehouse"
                 ],
@@ -1133,8 +1115,8 @@
         },
         "/warehouses/with-inventory-count": {
             "get": {
-                "operationId": "warehouses.warehouses.with-inventory-count",
-                "summary": "Get all warehouses including their capacity metrics and inventory count",
+                "operationId": "warehouses.with-inventory-count",
+                "summary": "List warehouses with capacity and inventory metrics",
                 "tags": [
                     "Warehouse"
                 ],
@@ -1168,8 +1150,8 @@
         },
         "/warehouses/slug/{warehouse}": {
             "get": {
-                "operationId": "warehouses.warehouses.show-by-slug",
-                "summary": "Show a single warehouse by its slug",
+                "operationId": "warehouses.show-by-slug",
+                "summary": "Get a warehouse by its slug",
                 "tags": [
                     "Warehouse"
                 ],
@@ -1186,7 +1168,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "",
+                        "description": "`WarehouseResource`",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -1214,7 +1196,7 @@
         },
         "/warehouses/{warehouse}/capacity": {
             "get": {
-                "operationId": "warehouses.warehouses.capacity",
+                "operationId": "warehouses.capacity",
                 "summary": "Get the capacity metrics of a warehouse",
                 "tags": [
                     "Warehouse"
@@ -1338,10 +1320,92 @@
                 }
             }
         },
+        "/warehouses": {
+            "get": {
+                "operationId": "warehouses.index",
+                "summary": "List all warehouses",
+                "tags": [
+                    "Warehouse"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Array of `WarehouseResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/WarehouseResource"
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            },
+            "post": {
+                "operationId": "warehouses.store",
+                "summary": "Create a new warehouse",
+                "tags": [
+                    "Warehouse"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/StoreWarehouseRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/WarehouseResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "message",
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    }
+                }
+            }
+        },
         "/warehouses/{warehouse}": {
             "get": {
                 "operationId": "warehouses.show",
-                "summary": "Get a single warehouse by id",
+                "summary": "Get a warehouse by id",
                 "tags": [
                     "Warehouse"
                 ],
@@ -1385,7 +1449,7 @@
             },
             "put": {
                 "operationId": "warehouses.update",
-                "summary": "Update the specified warehouse",
+                "summary": "Update a specified warehouse",
                 "tags": [
                     "Warehouse"
                 ],
@@ -1445,7 +1509,7 @@
             },
             "delete": {
                 "operationId": "warehouses.destroy",
-                "summary": "Remove the specified warehouse",
+                "summary": "Remove a specified warehouse",
                 "tags": [
                     "Warehouse"
                 ],
@@ -2012,6 +2076,25 @@
             },
             "ModelNotFoundException": {
                 "description": "Not found",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string",
+                                    "description": "Error overview."
+                                }
+                            },
+                            "required": [
+                                "message"
+                            ]
+                        }
+                    }
+                }
+            },
+            "AuthorizationException": {
+                "description": "Authorization error",
                 "content": {
                     "application/json": {
                         "schema": {
