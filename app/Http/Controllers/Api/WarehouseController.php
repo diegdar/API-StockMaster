@@ -34,7 +34,7 @@ class WarehouseController extends Controller implements HasMiddleware
     }
 
     /**
-     * Display a listing of warehouses.
+     * List all warehouses.
      */
     public function index(): AnonymousResourceCollection
     {
@@ -44,7 +44,7 @@ class WarehouseController extends Controller implements HasMiddleware
     }
 
     /**
-     * Store a newly created warehouse.
+     * Create a new warehouse.
      */
     public function store(StoreWarehouseRequest $request): JsonResponse
     {
@@ -58,7 +58,7 @@ class WarehouseController extends Controller implements HasMiddleware
     }
 
     /**
-     * Get a single warehouse by id.
+     * Get a warehouse by id.
      *
      * @param Warehouse $warehouse
      * @return WarehouseResource
@@ -69,22 +69,21 @@ class WarehouseController extends Controller implements HasMiddleware
     }
 
     /**
-     * Show a single warehouse by its slug.
+     * Get a warehouse by its slug.
      *
      * @param Warehouse $warehouse
-     * @return JsonResponse
+     *
+     * @return WarehouseResource
      */
-    public function showBySlug(Warehouse $warehouse): JsonResponse
+    public function showBySlug(Warehouse $warehouse): WarehouseResource
     {
         $warehouse->loadCount('inventories');
 
-        return response()->json([
-            'data' => new WarehouseResource($warehouse),
-        ]);
+        return new WarehouseResource($warehouse);
     }
 
     /**
-     * Update the specified warehouse.
+     * Update a specified warehouse.
      */
     public function update(UpdateWarehouseRequest $request, Warehouse $warehouse): JsonResponse
     {
@@ -98,7 +97,7 @@ class WarehouseController extends Controller implements HasMiddleware
     }
 
     /**
-     * Remove the specified warehouse.
+     * Remove a specified warehouse.
      */
     public function destroy(Warehouse $warehouse): JsonResponse
     {
@@ -127,19 +126,7 @@ class WarehouseController extends Controller implements HasMiddleware
     }
 
     /**
-     * Retrieve a list of all warehouses.
-     *
-     * @return AnonymousResourceCollection
-     */
-    public function listWarehouses(): AnonymousResourceCollection
-    {
-        $warehouses = $this->service->getAllWarehouses();
-
-        return WarehouseResource::collection($warehouses);
-    }
-
-    /**
-     * Retrieve a list of all warehouses including their capacity metrics.
+     * List warehouses with capacity metrics.
      *
      * @return AnonymousResourceCollection
      */
@@ -151,7 +138,7 @@ class WarehouseController extends Controller implements HasMiddleware
     }
 
     /**
-     * Get all warehouses including their capacity metrics and inventory count.
+     * List warehouses with capacity and inventory metrics.
      *
      * @return AnonymousResourceCollection
      */

@@ -900,7 +900,7 @@
         },
         "/warehouses/with-capacity": {
             "get": {
-                "operationId": "warehouses.warehouses.with-capacity",
+                "operationId": "warehouses.with-capacity",
                 "summary": "Retrieve a list of all warehouses including their capacity metrics",
                 "tags": [
                     "Warehouse"
@@ -935,7 +935,7 @@
         },
         "/warehouses/with-inventory-count": {
             "get": {
-                "operationId": "warehouses.warehouses.with-inventory-count",
+                "operationId": "warehouses.with-inventory-count",
                 "summary": "Get all warehouses including their capacity metrics and inventory count",
                 "tags": [
                     "Warehouse"
@@ -970,7 +970,7 @@
         },
         "/warehouses/slug/{warehouse}": {
             "get": {
-                "operationId": "warehouses.warehouses.show-by-slug",
+                "operationId": "warehouses.show-by-slug",
                 "summary": "Show a single warehouse by its slug",
                 "tags": [
                     "Warehouse"
@@ -1016,7 +1016,7 @@
         },
         "/warehouses/{warehouse}/capacity": {
             "get": {
-                "operationId": "warehouses.warehouses.capacity",
+                "operationId": "warehouses.capacity",
                 "summary": "Get the capacity metrics of a warehouse",
                 "tags": [
                     "Warehouse"

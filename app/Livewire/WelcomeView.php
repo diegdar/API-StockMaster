@@ -52,10 +52,10 @@ class WelcomeView extends Component
                 ['GET', '/api/warehouses/{id}', 'Ficha de Almacén', 'Acceso directo por ID numérico.', 'Admin, Worker, Viewer', 'warehouses.show'],
                 ['PUT', '/api/warehouses/{id}', 'Actualizar Almacén', 'Acceso directo por ID numérico.', 'Admin, Worker, Viewer', 'warehouses.update'],
                 ['GET', '/api/warehouses/{id}/capacity', 'Obtiene las métricas de capacidad de un almacén.', 'Acceso directo por ID numérico', 'Admin, Worker, Viewer', 'warehouses.capacity'],
-                ['GET', '/api/warehouses/slug/{slug}', 'Búsqueda por slug', 'Resolución automática de modelo vía slug para URLs amigables.', 'Admin, Worker, Viewer', 'warehouses.warehouses.show-by-slug'],
+                ['GET', '/api/warehouses/slug/{slug}', 'Búsqueda por slug', 'Resolución automática de modelo vía slug para URLs amigables.', 'Admin, Worker, Viewer', 'warehouses.show-by-slug'],
                 ['POST', '/api/warehouses/transfer', 'Mover Stock entre almacenes', 'Requiere product_id, source/dest (different) y quantity (min:1). Destino debe estar ACTIVO.', 'Admin, Worker', 'warehouses.transfer'],
-                ['GET', '/api/warehouses/with-capacity', 'Métricas Capacidad', ' lista de todos los almacenes, incluidas sus métricas de capacidad.', 'Admin, Worker, Viewer', 'warehouses.warehouses.with-capacity'],
-                ['GET', '/api/warehouses/with-inventory-count', 'Métricas Capacidad', ' lista de todos los almacenes, incluidas sus métricas de capacidad y el recuento de inventario.', 'Admin, Worker, Viewer', 'warehouses.warehouses.with-inventory-count'],
+                ['GET', '/api/warehouses/with-capacity', 'Métricas Capacidad', ' lista de todos los almacenes, incluidas sus métricas de capacidad.', 'Admin, Worker, Viewer', 'warehouses.with-capacity'],
+                ['GET', '/api/warehouses/with-inventory-count', 'Métricas Capacidad', ' lista de todos los almacenes, incluidas sus métricas de capacidad y el recuento de inventario.', 'Admin, Worker, Viewer', 'warehouses.with-inventory-count'],
                 ['DELETE', '/api/warehouses/{id}', 'Eliminar un Almacén', 'Elimina un almacén por ID numérico. Falla si hay si hay inventario asociado.', 'Admin', 'warehouses.destroy'],
             ],
         ];
