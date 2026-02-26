@@ -48,10 +48,10 @@ interface WarehouseRepositoryInterface
     public function findById(int $id): ?Warehouse;
 
     /**
-     * Get available capacity for a warehouse.
+     * Get the total quantity of all products in inventory for a given warehouse.
      *
-     * @param int $warehouseId
-     * @return int|null Returns null if warehouse has no capacity limit
+     * @param Warehouse $warehouse
+     * @return int Total quantity used in inventory
      */
-    public function getAvailableCapacity(int $warehouseId): ?int;
+    public function getUsedCapacity(Warehouse $warehouse): int;
 }

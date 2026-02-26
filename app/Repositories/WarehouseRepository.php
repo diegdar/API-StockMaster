@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace App\Repositories;
 
-use App\Models\Inventory;
 use App\Models\Warehouse;
 use App\Repositories\Contracts\WarehouseRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -52,7 +51,8 @@ class WarehouseRepository implements WarehouseRepositoryInterface
      */
     public function getAllWarehouses(): Collection
     {
-        return Warehouse::orderBy('name')->get();
+        return Warehouse::orderBy('name')
+                ->get();
     }
 
     /**
@@ -75,22 +75,15 @@ class WarehouseRepository implements WarehouseRepositoryInterface
     }
 
     /**
-     * Get available capacity for a warehouse.
+     * Get the total quantity of all products in inventory for a given warehouse.
      *
-     * @param int $warehouseId
-     * @return int|null Returns null if warehouse has no capacity limit
+     * @param Warehouse $warehouse
+     * @return int
      */
-    public function getAvailableCapacity(int $warehouseId): ?int
+    public function getUsedCapacity(Warehouse $warehouse): int
     {
-        $warehouse = Warehouse::find($warehouseId);
-
-        if ($warehouse === null || $warehouse->capacity === null) {
-            return null;
-        }
-
-        $usedCapacity = Inventory::where('warehouse_id', $warehouseId)
-            ->sum('quantity');
-
-        return $warehouse->capacity - $usedCapacity;
+        return  $warehouse
+                    ->inventories()
+                    ->sum('quantity');
     }
 }
