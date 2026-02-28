@@ -20,11 +20,13 @@ use Illuminate\Support\Facades\Gate;
 use App\Repositories\CategoryRepository;
 use App\Repositories\ProductRepository;
 use App\Repositories\StockMovementRepository;
+use App\Repositories\SupplierRepository;
 use App\Repositories\WarehouseRepository;
 use App\Repositories\Contracts\StockMovementRepositoryInterface;
 use App\Repositories\Contracts\CategoryRepositoryInterface;
 use App\Repositories\Contracts\ProductRepositoryInterface;
 use App\Repositories\Contracts\WarehouseRepositoryInterface;
+use App\Repositories\Contracts\SupplierRepositoryInterface;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -37,6 +39,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(CategoryRepositoryInterface::class, CategoryRepository::class);
         $this->app->bind(WarehouseRepositoryInterface::class, WarehouseRepository::class);
         $this->app->bind(StockMovementRepositoryInterface::class, StockMovementRepository::class);
+        $this->app->bind(SupplierRepositoryInterface::class, SupplierRepository::class);
     }
 
     /**
