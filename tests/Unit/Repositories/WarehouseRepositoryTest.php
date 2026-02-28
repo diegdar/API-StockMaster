@@ -6,6 +6,7 @@ namespace Tests\Unit\Repositories;
 use App\Repositories\Contracts\WarehouseRepositoryInterface;
 use Tests\TestCase;
 use Tests\Traits\EntityCreationTrait;
+use Illuminate\Database\QueryException;
 
 class WarehouseRepositoryTest extends TestCase
 {
@@ -155,13 +156,13 @@ class WarehouseRepositoryTest extends TestCase
                 ['name' => 'Test WH', 'location' => 'Test Loc', 'capacity' => 1000, 'is_active' => true],
                 '',
             ],
-            'missing name throws TypeError' => [
+            'missing name throws QueryException' => [
                 ['location' => 'Test Loc', 'capacity' => 1000],
-                \TypeError::class,
+                QueryException::class,
             ],
             'missing location throws QueryException' => [
                 ['name' => 'Test WH', 'capacity' => 1000],
-                \Illuminate\Database\QueryException::class,
+                QueryException::class,
             ],
         ];
     }
