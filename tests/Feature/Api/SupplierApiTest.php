@@ -3,14 +3,15 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Api;
 
-use App\Models\Supplier;
 use Laravel\Passport\Passport;
 use Tests\TestCase;
 use Tests\Traits\ApiTestUsersTrait;
+use Tests\Traits\SupplierTestTrait;
 
 class SupplierApiTest extends TestCase
 {
     use ApiTestUsersTrait;
+    use SupplierTestTrait;
 
     protected function setUp(): void
     {
@@ -21,7 +22,7 @@ class SupplierApiTest extends TestCase
     public function test_admin_can_list_suppliers(): void
     {
         Passport::actingAs($this->admin);
-        Supplier::factory()->count(5)->create();
+        $this->createSuppliers(5);
 
         $response = $this->getJson(route('suppliers.index'));
 
@@ -47,7 +48,7 @@ class SupplierApiTest extends TestCase
     public function test_admin_can_show_supplier(): void
     {
         Passport::actingAs($this->admin);
-        $supplier = Supplier::factory()->create();
+        $supplier = $this->createSupplier();
 
         $response = $this->getJson(route('suppliers.show', $supplier->id));
 
@@ -58,7 +59,7 @@ class SupplierApiTest extends TestCase
     public function test_admin_can_update_supplier(): void
     {
         Passport::actingAs($this->admin);
-        $supplier = Supplier::factory()->create(['name' => 'Nombre Original']);
+        $supplier = $this->createSupplier(['name' => 'Nombre Original']);
 
         $response = $this->putJson(route('suppliers.update', $supplier->id), [
             'name' => 'Nombre Actualizado',
@@ -71,18 +72,18 @@ class SupplierApiTest extends TestCase
     public function test_admin_can_delete_supplier(): void
     {
         Passport::actingAs($this->admin);
-        $supplier = Supplier::factory()->create();
+        $supplier = $this->createSupplier();
 
         $response = $this->deleteJson(route('suppliers.destroy', $supplier->id));
 
         $response->assertStatus(200);
-        $this->assertNull(Supplier::find($supplier->id));
+        $this->assertNull(\App\Models\Supplier::find($supplier->id));
     }
 
     public function test_worker_can_list_suppliers(): void
     {
         Passport::actingAs($this->worker);
-        Supplier::factory()->count(3)->create();
+        $this->createSuppliers(3);
 
         $response = $this->getJson(route('suppliers.index'));
 
@@ -113,7 +114,7 @@ class SupplierApiTest extends TestCase
     public function test_supplier_api_show_by_slug(): void
     {
         Passport::actingAs($this->admin);
-        $supplier = Supplier::factory()->create(['name' => 'Proveedor de Prueba']);
+        $supplier = $this->createSupplier(['name' => 'Proveedor de Prueba']);
 
         $response = $this->getJson(route('suppliers.show-by-slug', $supplier->slug));
 

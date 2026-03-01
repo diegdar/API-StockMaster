@@ -10,9 +10,12 @@ use App\Models\Supplier;
 use App\Repositories\Contracts\SupplierRepositoryInterface;
 use App\Services\SupplierService;
 use Tests\TestCase;
+use Tests\Traits\SupplierTestTrait;
 
 class SupplierServiceTest extends TestCase
 {
+    use SupplierTestTrait;
+
     private SupplierService $service;
 
     protected function setUp(): void
@@ -25,7 +28,7 @@ class SupplierServiceTest extends TestCase
 
     public function test_get_all_suppliers(): void
     {
-        Supplier::factory()->count(10)->create();
+        $this->createSuppliers(10);
 
         $result = $this->service->getAllSuppliers(5);
 
@@ -49,7 +52,7 @@ class SupplierServiceTest extends TestCase
 
     public function test_update_supplier(): void
     {
-        $supplier = Supplier::factory()->create();
+        $supplier = $this->createSupplier();
 
         $dto = new UpdateSupplierDTO(
             name: 'Updated Supplier',
@@ -64,7 +67,7 @@ class SupplierServiceTest extends TestCase
 
     public function test_delete_supplier(): void
     {
-        $supplier = Supplier::factory()->create();
+        $supplier = $this->createSupplier();
 
         $this->service->deleteSupplier($supplier);
 
@@ -73,19 +76,8 @@ class SupplierServiceTest extends TestCase
 
     public function test_delete_supplier_with_products_throws_exception(): void
     {
-        $supplier = Supplier::factory()->create();
-        $category = \App\Models\Category::factory()->create();
-
-        $supplier->products()->createMany([
-            [
-                'name' => 'Product 1',
-                'sku' => 'SKU-001',
-                'description' => 'Test product',
-                'unit_price' => 10.00,
-                'unit_cost' => 5.00,
-                'category_id' => $category->id,
-            ],
-        ]);
+        $result = $this->createSupplierWithProducts(1);
+        $supplier = $result['supplier'];
 
         $this->expectException(DeletionException::class);
 
@@ -94,7 +86,7 @@ class SupplierServiceTest extends TestCase
 
     public function test_activate_supplier(): void
     {
-        $supplier = Supplier::factory()->create(['is_active' => false]);
+        $supplier = $this->createSupplier(['is_active' => false]);
 
         $result = $this->service->activateSupplier($supplier);
 
@@ -103,7 +95,7 @@ class SupplierServiceTest extends TestCase
 
     public function test_deactivate_supplier(): void
     {
-        $supplier = Supplier::factory()->create(['is_active' => true]);
+        $supplier = $this->createSupplier(['is_active' => true]);
 
         $result = $this->service->deactivateSupplier($supplier);
 
@@ -112,33 +104,14 @@ class SupplierServiceTest extends TestCase
 
     public function test_get_supplier_performance(): void
     {
-        $supplier = Supplier::factory()->create();
-        $category = \App\Models\Category::factory()->create();
+        $result = $this->createSupplierWithProducts(2);
+        $supplier = $result['supplier'];
 
-        $supplier->products()->createMany([
-            [
-                'name' => 'Product 1',
-                'sku' => 'SKU-001',
-                'description' => 'Test product 1',
-                'unit_price' => 100.00,
-                'unit_cost' => 50.00,
-                'category_id' => $category->id,
-            ],
-            [
-                'name' => 'Product 2',
-                'sku' => 'SKU-002',
-                'description' => 'Test product 2',
-                'unit_price' => 200.00,
-                'unit_cost' => 100.00,
-                'category_id' => $category->id,
-            ],
-        ]);
+        $perf = $this->service->getSupplierPerformance($supplier);
 
-        $result = $this->service->getSupplierPerformance($supplier);
-
-        $this->assertArrayHasKey('supplier_id', $result);
-        $this->assertArrayHasKey('supplier_name', $result);
-        $this->assertArrayHasKey('total_products', $result);
-        $this->assertEquals(2, $result['total_products']);
+        $this->assertArrayHasKey('supplier_id', $perf);
+        $this->assertArrayHasKey('supplier_name', $perf);
+        $this->assertArrayHasKey('total_products', $perf);
+        $this->assertEquals(2, $perf['total_products']);
     }
 }

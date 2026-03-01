@@ -6,9 +6,12 @@ namespace Tests\Unit\Repositories;
 use App\Models\Supplier;
 use App\Repositories\SupplierRepository;
 use Tests\TestCase;
+use Tests\Traits\SupplierTestTrait;
 
 class SupplierRepositoryTest extends TestCase
 {
+    use SupplierTestTrait;
+
     private SupplierRepository $repository;
 
     protected function setUp(): void
@@ -19,7 +22,7 @@ class SupplierRepositoryTest extends TestCase
 
     public function test_get_all_returns_paginated_suppliers(): void
     {
-        Supplier::factory()->count(20)->create();
+        $this->createSuppliers(20);
 
         $result = $this->repository->getAll(5);
 
@@ -29,27 +32,8 @@ class SupplierRepositoryTest extends TestCase
 
     public function test_get_suppliers_with_product_count(): void
     {
-        $supplier = Supplier::factory()->create();
-        $category = \App\Models\Category::factory()->create();
-
-        $supplier->products()->createMany([
-            [
-                'name' => 'Product 1',
-                'sku' => 'SKU-001',
-                'description' => 'Test product 1',
-                'unit_price' => 10.00,
-                'unit_cost' => 5.00,
-                'category_id' => $category->id,
-            ],
-            [
-                'name' => 'Product 2',
-                'sku' => 'SKU-002',
-                'description' => 'Test product 2',
-                'unit_price' => 20.00,
-                'unit_cost' => 10.00,
-                'category_id' => $category->id,
-            ],
-        ]);
+        $result = $this->createSupplierWithProducts(2);
+        $supplier = $result['supplier'];
 
         $result = $this->repository->getSuppliersWithProductCount();
 
@@ -75,7 +59,7 @@ class SupplierRepositoryTest extends TestCase
 
     public function test_update_supplier(): void
     {
-        $supplier = Supplier::factory()->create([
+        $supplier = $this->createSupplier([
             'name' => 'Old Name',
             'contact_email' => 'old@supplier.com',
         ]);
@@ -93,7 +77,7 @@ class SupplierRepositoryTest extends TestCase
 
     public function test_delete_supplier(): void
     {
-        $supplier = Supplier::factory()->create();
+        $supplier = $this->createSupplier();
 
         $this->repository->delete($supplier);
 
@@ -102,7 +86,7 @@ class SupplierRepositoryTest extends TestCase
 
     public function test_activate_supplier(): void
     {
-        $supplier = Supplier::factory()->create(['is_active' => false]);
+        $supplier = $this->createSupplier(['is_active' => false]);
 
         $result = $this->repository->activate($supplier);
 
@@ -111,7 +95,7 @@ class SupplierRepositoryTest extends TestCase
 
     public function test_deactivate_supplier(): void
     {
-        $supplier = Supplier::factory()->create(['is_active' => true]);
+        $supplier = $this->createSupplier(['is_active' => true]);
 
         $result = $this->repository->deactivate($supplier);
 
