@@ -29,6 +29,7 @@ class UpdateSupplierRequest extends FormRequest
 
         return [
             'name' => "sometimes|string|max:255|unique:suppliers,name,{$supplierId}",
+            'slug' => "sometimes|string|max:255|unique:suppliers,slug,{$supplierId}",
             'contact_email' => "sometimes|email|unique:suppliers,contact_email,{$supplierId}",
             'phone' => 'sometimes|string|max:50',
             'address' => 'sometimes|string',
