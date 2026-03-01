@@ -45,6 +45,11 @@
             "key": "supplierId",
             "value": "1",
             "type": "string"
+        },
+        {
+            "key": "supplierIdForDelete",
+            "value": "2",
+            "type": "string"
         }
     ],
     "auth": {
@@ -1808,6 +1813,534 @@
                                 }
                             ],
                             "body": "{\"message\":\"The selected destination warehouse is not active.\",\"errors\":{\"destination_warehouse_id\":[\"The selected destination warehouse is not active.\"]}}"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Suppliers",
+            "item": [
+                {
+                    "name": "List Suppliers",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 200) {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    if (jsonData.data && jsonData.data.length > 0) {",
+                                    "        pm.collectionVariables.set('supplierId', jsonData.data[0].id);",
+                                    "    }",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{adminAccessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/suppliers",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "suppliers"
+                            ]
+                        },
+                        "description": "Retrieve a paginated list of all suppliers. Requires authentication (all roles)."
+                    },
+                    "response": [
+                        {
+                            "name": "Suppliers List Success",
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\"data\":[{\"name\":\"Tech Supplies Inc\",\"slug\":\"tech-supplies-inc\",\"contact_email\":\"contact@techsupplies.com\",\"phone\":\"+1234567890\",\"address\":\"123 Tech Street, Silicon Valley\",\"is_active\":true,\"products_count\":5,\"created_at\":\"2026-01-01T00:00:00.000000Z\",\"updated_at\":\"2026-01-01T00:00:00.000000Z\"}],\"links\":{\"first\":\"...?page=1\",\"last\":\"...?page=1\",\"prev\":null,\"next\":null},\"meta\":{\"current_page\":1,\"last_page\":1,\"per_page\":15,\"total\":3}}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Create Supplier",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{adminAccessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"Global Parts Co\",\n    \"contact_email\": \"sales@globalparts.com\",\n    \"phone\": \"+1987654321\",\n    \"address\": \"456 Industrial Ave, Chicago, IL\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/suppliers",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "suppliers"
+                            ]
+                        },
+                        "description": "Create a new supplier. Requires Admin role."
+                    },
+                    "response": [
+                        {
+                            "name": "Supplier Created",
+                            "status": "Created",
+                            "code": 201,
+                            "_postman_previewlanguage": "json",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\"message\":\"The Supplier 'Global Parts Co' has been created successfully\",\"data\":{\"name\":\"Global Parts Co\",\"slug\":\"global-parts-co\",\"contact_email\":\"sales@globalparts.com\",\"phone\":\"+1987654321\",\"address\":\"456 Industrial Ave, Chicago, IL\",\"is_active\":true,\"products_count\":0,\"id\":4,\"created_at\":\"2026-03-01T12:00:00.000000Z\",\"updated_at\":\"2026-03-01T12:00:00.000000Z\"}}"
+                        },
+                        {
+                            "name": "Validation Error",
+                            "status": "Unprocessable Entity",
+                            "code": 422,
+                            "_postman_previewlanguage": "json",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\"message\":\"The name field is required.\",\"errors\":{\"name\":[\"The name field is required.\"]}}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Show Supplier",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{adminAccessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/suppliers/{{supplierId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "suppliers",
+                                "{{supplierId}}"
+                            ]
+                        },
+                        "description": "Retrieve a single supplier by ID. Requires authentication (all roles)."
+                    },
+                    "response": [
+                        {
+                            "name": "Supplier Found",
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\"data\":{\"name\":\"Tech Supplies Inc\",\"slug\":\"tech-supplies-inc\",\"contact_email\":\"contact@techsupplies.com\",\"phone\":\"+1234567890\",\"address\":\"123 Tech Street, Silicon Valley\",\"is_active\":true,\"products_count\":5,\"id\":1,\"created_at\":\"2026-01-01T00:00:00.000000Z\",\"updated_at\":\"2026-01-01T00:00:00.000000Z\"}}"
+                        },
+                        {
+                            "name": "Supplier Not Found",
+                            "status": "Not Found",
+                            "code": 404,
+                            "_postman_previewlanguage": "json",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\"message\":\"No query results for model [App\\\\Models\\\\Supplier].\"}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Show Supplier by Slug",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{adminAccessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/suppliers/slug/tech-supplies-inc",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "suppliers",
+                                "slug",
+                                "tech-supplies-inc"
+                            ]
+                        },
+                        "description": "Retrieve a single supplier by slug. Requires authentication (all roles)."
+                    },
+                    "response": [
+                        {
+                            "name": "Supplier Found by Slug",
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\"data\":{\"name\":\"Tech Supplies Inc\",\"slug\":\"tech-supplies-inc\",\"contact_email\":\"contact@techsupplies.com\",\"phone\":\"+1234567890\",\"address\":\"123 Tech Street, Silicon Valley\",\"is_active\":true,\"products_count\":5,\"id\":1,\"created_at\":\"2026-01-01T00:00:00.000000Z\",\"updated_at\":\"2026-01-01T00:00:00.000000Z\"}}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Update Supplier",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{adminAccessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"Tech Supplies International\",\n    \"contact_email\": \"newemail@techsupplies.com\",\n    \"phone\": \"+1111111111\",\n    \"address\": \"Updated Address\",\n    \"is_active\": true\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/suppliers/{{supplierId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "suppliers",
+                                "{{supplierId}}"
+                            ]
+                        },
+                        "description": "Update an existing supplier. Requires Admin role."
+                    },
+                    "response": [
+                        {
+                            "name": "Supplier Updated",
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\"message\":\"The Supplier 'Tech Supplies International' has been updated successfully\",\"data\":{\"name\":\"Tech Supplies International\",\"slug\":\"tech-supplies-international\",\"contact_email\":\"newemail@techsupplies.com\",\"phone\":\"+1111111111\",\"address\":\"Updated Address\",\"is_active\":true,\"products_count\":5,\"id\":1,\"created_at\":\"2026-01-01T00:00:00.000000Z\",\"updated_at\":\"2026-03-01T12:00:00.000000Z\"}}"
+                        },
+                        {
+                            "name": "Validation Error",
+                            "status": "Unprocessable Entity",
+                            "code": 422,
+                            "_postman_previewlanguage": "json",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\"message\":\"The name must not be greater than 255 characters.\",\"errors\":{\"name\":[\"The name must not be greater than 255 characters.\"]}}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Delete Supplier",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{adminAccessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/suppliers/{{supplierIdForDelete}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "suppliers",
+                                "{{supplierIdForDelete}}"
+                            ]
+                        },
+                        "description": "Delete a supplier. Requires Admin role. Returns 204 No Content."
+                    },
+                    "response": [
+                        {
+                            "name": "Supplier Deleted",
+                            "status": "No Content",
+                            "code": 204,
+                            "_postman_previewlanguage": "json",
+                            "header": [],
+                            "body": ""
+                        },
+                        {
+                            "name": "Cannot Delete - Has Products",
+                            "status": "Unprocessable Entity",
+                            "code": 422,
+                            "_postman_previewlanguage": "json",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\"message\":\"Cannot delete supplier because it has associated products. Please remove or reassign the products first.\",\"errors\":{\"supplier\":[\"This supplier has 5 associated product(s).\"]}}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Activate Supplier",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{adminAccessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/suppliers/{{supplierId}}/activate",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "suppliers",
+                                "{{supplierId}}",
+                                "activate"
+                            ]
+                        },
+                        "description": "Activate a supplier. Requires Admin role."
+                    },
+                    "response": [
+                        {
+                            "name": "Supplier Activated",
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\"message\":\"The Supplier 'Tech Supplies Inc' has been activated successfully\",\"data\":{\"name\":\"Tech Supplies Inc\",\"slug\":\"tech-supplies-inc\",\"contact_email\":\"contact@techsupplies.com\",\"phone\":\"+1234567890\",\"address\":\"123 Tech Street, Silicon Valley\",\"is_active\":true,\"products_count\":5,\"id\":1,\"created_at\":\"2026-01-01T00:00:00.000000Z\",\"updated_at\":\"2026-03-01T12:00:00.000000Z\"}}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Deactivate Supplier",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{adminAccessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/suppliers/{{supplierId}}/deactivate",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "suppliers",
+                                "{{supplierId}}",
+                                "deactivate"
+                            ]
+                        },
+                        "description": "Deactivate a supplier. Requires Admin role."
+                    },
+                    "response": [
+                        {
+                            "name": "Supplier Deactivated",
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\"message\":\"The Supplier 'Tech Supplies Inc' has been deactivated successfully\",\"data\":{\"name\":\"Tech Supplies Inc\",\"slug\":\"tech-supplies-inc\",\"contact_email\":\"contact@techsupplies.com\",\"phone\":\"+1234567890\",\"address\":\"123 Tech Street, Silicon Valley\",\"is_active\":false,\"products_count\":5,\"id\":1,\"created_at\":\"2026-01-01T00:00:00.000000Z\",\"updated_at\":\"2026-03-01T12:00:00.000000Z\"}}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Supplier Performance",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{adminAccessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/suppliers/{{supplierId}}/performance",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "suppliers",
+                                "{{supplierId}}",
+                                "performance"
+                            ]
+                        },
+                        "description": "Get supplier performance metrics. Requires Admin role."
+                    },
+                    "response": [
+                        {
+                            "name": "Performance Metrics",
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\"data\":{\"supplier_id\":1,\"supplier_name\":\"Tech Supplies Inc\",\"total_products\":5,\"total_inventory_value\":50000.00,\"total_stock_units\":150,\"low_stock_products\":2,\"out_of_stock_products\":0,\"active_products\":4,\"inactive_products\":1,\"average_unit_cost\":333.33,\"performance_score\":85.5}}"
                         }
                     ]
                 }

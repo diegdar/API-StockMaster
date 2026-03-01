@@ -7,6 +7,7 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Exceptions\ThrottleRequestsException;
 use Illuminate\Routing\Middleware\ThrottleRequests;
+use Illuminate\Validation\ValidationException;
 use Spatie\Permission\Exceptions\UnauthorizedException;
 use Spatie\Permission\Middleware\RoleMiddleware;
 use Spatie\Permission\Middleware\PermissionMiddleware;
@@ -55,6 +56,14 @@ return Application::configure(basePath: dirname(__DIR__))
         // Handle Rate Limiting (ThrottleRequestsException)
         $exceptions->renderable(function (ThrottleRequestsException $e) {
             return response()->json(['error' => 'Demasiadas solicitudes'], 429);
+        });
+
+        // Handle Validation Exceptions - must be before generic Throwable
+        $exceptions->renderable(function (ValidationException $e) {
+            return response()->json([
+                'message' => 'The given data was invalid.',
+                'errors' => $e->errors(),
+            ], 422);
         });
 
         $exceptions->renderable(function (\Throwable $e) {

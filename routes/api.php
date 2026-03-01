@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\WarehouseController;
+use App\Http\Controllers\Api\SupplierController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -44,5 +45,11 @@ Route::middleware(['auth:api', 'throttle:api'])->group(function () {
     });
 
     Route::apiResource('warehouses', WarehouseController::class)->names('warehouses');
+
+// SUPPLIERS
+    Route::apiResource('suppliers', SupplierController::class)->names('suppliers');
+    Route::prefix('suppliers')->name('suppliers.')->group(function () {
+        Route::get('/slug/{supplier:slug}', [SupplierController::class, 'showBySlug'])->name('show-by-slug');
+    });
 
 });

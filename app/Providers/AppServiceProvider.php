@@ -2,40 +2,31 @@
 
 namespace App\Providers;
 
-use App\Models\{
-    Category,
-    StockMovement,
-    Warehouse
-};
-use App\Observers\{
-    CategoryObserver,
-    StockMovementObserver,
-    WarehouseObserver
-};
-use Dedoc\Scramble\{
-    Scramble,
-    Support\Generator\OpenApi,
-    Support\Generator\SecurityScheme,
-
-};
-use Illuminate\{
-    Cache\RateLimiting\Limit,
-    Http\Request,
-    Support\Facades\RateLimiter,
-    Support\Facades\Schema,
-    Support\ServiceProvider,
-    Support\Facades\Gate,
-};
-use App\Repositories\{
-    CategoryRepository,
-    ProductRepository,
-    StockMovementRepository,
-    WarehouseRepository,
-    Contracts\StockMovementRepositoryInterface,
-    Contracts\CategoryRepositoryInterface,
-    Contracts\ProductRepositoryInterface,
-    Contracts\WarehouseRepositoryInterface
-};
+use App\Models\Category;
+use App\Models\StockMovement;
+use App\Models\Supplier;
+use App\Models\Warehouse;
+use App\Observers\SlugObserver;
+use App\Observers\StockMovementObserver;
+use Dedoc\Scramble\Scramble;
+use Dedoc\Scramble\Support\Generator\OpenApi;
+use Dedoc\Scramble\Support\Generator\SecurityScheme;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\Gate;
+use App\Repositories\CategoryRepository;
+use App\Repositories\ProductRepository;
+use App\Repositories\StockMovementRepository;
+use App\Repositories\SupplierRepository;
+use App\Repositories\WarehouseRepository;
+use App\Repositories\Contracts\StockMovementRepositoryInterface;
+use App\Repositories\Contracts\CategoryRepositoryInterface;
+use App\Repositories\Contracts\ProductRepositoryInterface;
+use App\Repositories\Contracts\WarehouseRepositoryInterface;
+use App\Repositories\Contracts\SupplierRepositoryInterface;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -48,6 +39,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(CategoryRepositoryInterface::class, CategoryRepository::class);
         $this->app->bind(WarehouseRepositoryInterface::class, WarehouseRepository::class);
         $this->app->bind(StockMovementRepositoryInterface::class, StockMovementRepository::class);
+        $this->app->bind(SupplierRepositoryInterface::class, SupplierRepository::class);
     }
 
     /**
@@ -59,8 +51,9 @@ class AppServiceProvider extends ServiceProvider
 
         // Observers
         StockMovement::observe(StockMovementObserver::class);
-        Category::observe(CategoryObserver::class);
-        Warehouse::observe(WarehouseObserver::class);
+        Category::observe(SlugObserver::class);
+        Supplier::observe(SlugObserver::class);
+        Warehouse::observe(SlugObserver::class);
 
         // Rate Limiter
         RateLimiter::for('api', function (Request $request) {

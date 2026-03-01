@@ -58,6 +58,17 @@ class WelcomeView extends Component
                 ['GET', '/api/warehouses/with-inventory-count', 'Métricas Capacidad', ' lista de todos los almacenes, incluidas sus métricas de capacidad y el recuento de inventario.', 'Admin, Worker, Viewer', 'warehouses.with-inventory-count'],
                 ['DELETE', '/api/warehouses/{id}', 'Eliminar un Almacén', 'Elimina un almacén por ID numérico. Falla si hay si hay inventario asociado.', 'Admin', 'warehouses.destroy'],
             ],
+            'Gestión de Proveedores' => [
+                ['GET', '/api/suppliers', 'Listar Proveedores', 'Vista resumida con nombres, slugs y estado (is_active).', 'Admin, Worker, Viewer', 'suppliers.index'],
+                ['POST', '/api/suppliers', 'Crear Proveedor', 'Requiere name (unique, max:255), email, phone y address.', 'Admin', 'suppliers.store'],
+                ['GET', '/api/suppliers/{id}', 'Ficha de Proveedor', 'Acceso directo por ID numérico.', 'Admin, Worker, Viewer', 'suppliers.show'],
+                ['PUT', '/api/suppliers/{id}', 'Actualizar Proveedor', 'Acceso directo por ID numérico.', 'Admin', 'suppliers.update'],
+                ['GET', '/api/suppliers/slug/{slug}', 'Búsqueda por slug', 'Resolución automática de modelo vía slug para URLs amigables.', 'Admin, Worker, Viewer', 'suppliers.show-by-slug'],
+                ['PATCH', '/api/suppliers/{id}/activate', 'Activar Proveedor', 'Marca el proveedor como activo (is_active = true).', 'Admin', 'suppliers.activate'],
+                ['PATCH', '/api/suppliers/{id}/deactivate', 'Desactivar Proveedor', 'Marca el proveedor como inactivo (is_active = false).', 'Admin', 'suppliers.deactivate'],
+                ['GET', '/api/suppliers/{id}/performance', 'Métricas de Rendimiento', 'Retorna total_products, active_products y total_inventory_value.', 'Admin', 'suppliers.performance'],
+                ['DELETE', '/api/suppliers/{id}', 'Eliminar un Proveedor', 'Elimina un proveedor por ID numérico. Falla si hay productos asociados.', 'Admin', 'suppliers.destroy'],
+            ],
         ];
     }
 
