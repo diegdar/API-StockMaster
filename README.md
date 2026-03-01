@@ -240,6 +240,22 @@ Regla [`StrongPassword`](app/Rules/StrongPassword.php):
 | GET | `/api/warehouses/with-inventory-count` | Almacenes con conteo de inventario | Todos |
 | POST | `/api/warehouses/transfer` | Transferir stock entre almacenes | Admin, Worker |
 
+### Proveedores (Protegido)
+
+| Método | Endpoint | Descripción | Roles |
+|--------|----------|-------------|-------|
+| GET | `/api/suppliers` | Listar proveedores (paginado) | Todos |
+| POST | `/api/suppliers` | Crear proveedor | Admin |
+| GET | `/api/suppliers/{id}` | Mostrar proveedor por ID | Todos |
+| GET | `/api/suppliers/slug/{slug}` | Mostrar proveedor por slug | Todos |
+| PUT/PATCH | `/api/suppliers/{id}` | Actualizar proveedor | Admin |
+| DELETE | `/api/suppliers/{id}` | Eliminar proveedor | Admin |
+| PATCH | `/api/suppliers/{id}/activate` | Activar proveedor | Admin |
+| PATCH | `/api/suppliers/{id}/deactivate` | Desactivar proveedor | Admin |
+| GET | `/api/suppliers/{id}/performance` | Métricas de rendimiento del proveedor | Admin |
+
+> **Nota:** No se puede eliminar un proveedor que tenga productos asociados (retorna 422). Los proveedores pueden estar activos o inactivos (`is_active`).
+
 ### Cabeceras de Petición
 
 ```
@@ -271,6 +287,32 @@ POST /api/warehouses/transfer
 - Capacidad disponible en almacén destino
 - Almacenes activos
 - Transacción atómica (rollback automático en error)
+
+### Gestión de Proveedores
+
+El sistema incluye una gestión completa de proveedores con las siguientes características:
+
+- **CRUD completo**: Crear, leer, actualizar y eliminar proveedores
+- **Slugs automáticos**: Generación automática de URLs amigables
+- **Activación/Desactivación**: Control de estado de proveedores sin eliminarlos
+- **Métricas de rendimiento**: Seguimiento del desempeño del proveedor
+- **Eliminación segura**: Previene eliminación si hay productos asociados
+
+```json
+PATCH /api/suppliers/1/activate
+Respuesta: {"message": "Supplier activated successfully", ...}
+
+PATCH /api/suppliers/1/deactivate
+Respuesta: {"message": "Supplier deactivated successfully", ...}
+
+GET /api/suppliers/1/performance
+Respuesta: {
+  "supplier_id": 1,
+  "total_products": 5,
+  "active_products": 3,
+  "total_inventory_value": 15000.00
+}
+```
 
 ### Valoración de Inventario
 
